@@ -174,8 +174,10 @@ if ($result->num_rows > 0) {
             $imgName .= "_" . strtolower($forma);
         }
 
+
+        //spero funzioni
         echo "<td>
-                <img src='images/$imgName.png' 
+                <img src='Img/$imgName.png' 
                      class='poke-img'
                      alt='$nome'>
               </td>";
