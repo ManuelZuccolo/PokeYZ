@@ -1,0 +1,180 @@
+/* RESET */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Trebuchet MS', sans-serif;
+}
+
+body {
+    background: linear-gradient(to bottom, #ff0000 0%, #cc0000 50%, #ffffff 50%, #f2f2f2 100%);
+    min-height: 100vh;
+}
+
+/* HEADER */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    background-color: #ff0000;
+    border-bottom: 6px solid black;
+}
+
+/* LOGO */
+.logo h1 {
+    color: #ffde00;
+    font-size: 32px;
+    text-shadow: 3px 3px 0px #3b4cca;
+}
+
+/* LOGIN BAR */
+.login-container {
+    position: relative;
+}
+
+.login-bar {
+    display: flex;
+    align-items: center;
+    background: linear-gradient(to bottom, #ffffff 50%, #ffffff 50%);
+    border: 3px solid black;
+    border-radius: 50px 50px 50px 50px;
+    overflow: hidden;
+    width: 60px;
+    height: 50px;
+    transition: all 0.4s ease;
+    cursor: pointer;
+}
+
+/* Effetto hover: si allunga */
+.login-bar:hover {
+    width: 220px;
+}
+
+.login-bar img {
+    width: 40px;
+    height: 40px;
+    margin-left: 5px;
+}
+
+.login-bar span {
+    margin-left: 15px;
+    font-weight: bold;
+    color: black;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* Mostra testo solo quando allungata */
+.login-bar:hover span {
+    opacity: 1;
+}
+
+/* HERO */
+.hero {
+    text-align: center;
+    margin-top: 100px;
+    color: black;
+}
+
+.hero h2 {
+    font-size: 42px;
+    color: #3b4cca;
+}
+
+.hero p {
+    margin: 20px 0;
+    font-size: 18px;
+}
+
+.main-btn {
+    padding: 12px 30px;
+    font-size: 16px;
+    background-color: #ffde00;
+    border: 3px solid #3b4cca;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.main-btn:hover {
+    background-color: #3b4cca;
+    color: white;
+}
+
+.pokedex-table {
+    width: 90%;
+    margin: 40px auto;
+    border-collapse: collapse;
+    background-color: white;
+}
+
+.pokedex-table th, .pokedex-table td {
+    border: 2px solid black;
+    padding: 10px;
+    text-align: center;
+}
+
+.poke-img {
+    width: 70px;
+}
+
+.type {
+    padding: 5px 10px;
+    border-radius: 15px;
+    color: white;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+/* COLORI UFFICIALI TIPI */
+.fire { background-color: #EE8130; }
+.water { background-color: #6390F0; }
+.grass { background-color: #7AC74C; }
+.electric { background-color: #F7D02C; }
+.ice { background-color: #96D9D6; }
+.fighting { background-color: #C22E28; }
+.poison { background-color: #A33EA1; }
+.ground { background-color: #E2BF65; }
+.flying { background-color: #A98FF3; }
+.psychic { background-color: #F95587; }
+.bug { background-color: #A6B91A; }
+.rock { background-color: #B6A136; }
+.ghost { background-color: #735797; }
+.dragon { background-color: #6F35FC; }
+.dark { background-color: #705746; }
+.steel { background-color: #B7B7CE; }
+.fairy { background-color: #D685AD; }
+.normal { background-color: #A8A77A; }
+
+.pokedex-section {
+    width: 90%;
+    margin: 60px auto;
+}
+
+.pokedex-section h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #3b4cca;
+}
+
+.pokedex-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+}
+
+.pokedex-table th, .pokedex-table td {
+    border: 2px solid black;
+    padding: 10px;
+    text-align: center;
+}
+
+.pokedex-table th {
+    background-color: #29292924;
+}
+
+.poke-img {
+    width: 70px;
+}
