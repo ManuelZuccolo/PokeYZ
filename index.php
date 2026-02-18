@@ -10,13 +10,65 @@ if ($conn->connect_error) {
     die("Connessione fallita: " . $conn->connect_error);
 }
 
-$sql = "
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+// Recupero filtri
+$nomeFiltro = $_GET['nome'] ?? '';
+$type1Filtro = $_GET['type1'] ?? '';
+$type2Filtro = $_GET['type2'] ?? '';
+$minCod = $_GET['min'] ?? '';
+$maxCod = $_GET['max'] ?? '';
+
+// Query base
+$sql = "SELECT cod, sec_form, nome, tipo1, tipo2 FROM Pokemon WHERE 1=1";
+
+// Filtro nome
+if (!empty($nomeFiltro)) {
+    $nomeFiltro = $conn->real_escape_string($nomeFiltro);
+    $sql .= " AND nome LIKE '%$nomeFiltro%'";
+}
+
+// Filtro tipo 1
+if (!empty($type1Filtro)) {
+    $type1Filtro = $conn->real_escape_string($type1Filtro);
+    $sql .= " AND (tipo1 = '$type1Filtro' OR tipo2 = '$type1Filtro')";
+}
+
+// Filtro tipo 2
+if (!empty($type2Filtro)) {
+    $type2Filtro = $conn->real_escape_string($type2Filtro);
+    $sql .= " AND (tipo1 = '$type2Filtro' OR tipo2 = '$type2Filtro')";
+}
+
+// Range codice
+if (!empty($minCod)) {
+    $minCod = (int)$minCod;
+    $sql .= " AND cod >= $minCod";
+}
+
+if (!empty($maxCod)) {
+    $maxCod = (int)$maxCod;
+    $sql .= " AND cod <= $maxCod";
+}
+
+$sql .= " ORDER BY cod ASC, sec_form ASC";
+
+
+$result = $conn->query($sql);
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+/*$sql = "
 SELECT cod, sec_form, nome, tipo1, tipo2
 FROM Pokemon
 ORDER BY cod ASC, sec_form ASC
 ";
 
-$result = $conn->query($sql);
+$result = $conn->query($sql);*/
 ?>
 
 <!DOCTYPE html>
@@ -52,6 +104,51 @@ $result = $conn->query($sql);
 <!-- POKEDEX TABLE -->
 <section class="pokedex-section">
     <h2>Elenco Pokémon</h2>
+
+
+    <form method="GET" class="filter-box">
+
+    <!-- Ricerca nome -->
+    <input type="text" name="nome" 
+           placeholder="Cerca per nome..."
+           value="<?= htmlspecialchars($nomeFiltro) ?>">
+
+    <!-- Tipo 1 -->
+    <select name="type1">
+        <option value="">Tipo 1</option>
+        <option value="fire">Fire</option>
+        <option value="water">Water</option>
+        <option value="grass">Grass</option>
+        <option value="electric">Electric</option>
+        <option value="ghost">Ghost</option>
+        <option value="dragon">Dragon</option>
+        <!-- aggiungi gli altri -->
+    </select>
+
+    <!-- Tipo 2 -->
+    <select name="type2">
+        <option value="">Tipo 2</option>
+        <option value="fire">Fire</option>
+        <option value="water">Water</option>
+        <option value="grass">Grass</option>
+        <option value="electric">Electric</option>
+        <option value="ghost">Ghost</option>
+        <option value="dragon">Dragon</option>
+    </select>
+
+    <!-- Range codice -->
+    <input type="number" name="min" placeholder="Da #" min="1"
+           value="<?= htmlspecialchars($minCod) ?>">
+
+    <input type="number" name="max" placeholder="A #" min="1"
+           value="<?= htmlspecialchars($maxCod) ?>">
+
+    <button type="submit">Filtra</button>
+    <a href="index.php" class="reset-btn">Reset</a>
+
+</form>
+
+
 
     <table class="pokedex-table">
         <tr>
