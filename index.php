@@ -98,7 +98,7 @@ $result = $conn->query($sql);*/
 <section class="hero">
     <h2>Benvenuto Allenatore!</h2>
     <p>Esplora il mondo dei Pokémon e crea la tua squadra perfetta.</p>
-    <button class="main-btn">Scopri i Pokémon</button>
+    
 </section>
 
 <!-- POKEDEX TABLE -->
