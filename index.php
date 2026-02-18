@@ -116,47 +116,49 @@ $result = $conn->query($sql);*/
     <!-- Tipo 1 -->
     <select name="type1">
         <option value="">Tipo 1</option>
-        <option value="fire" <?= $type1Filtro == 'fire' ? 'selected' : '' ?>>Fire</option>
-        <option value="water" <?= $type1Filtro == 'water' ? 'selected' : '' ?>>Water</option>
-        <option value="grass" <?= $type1Filtro == 'grass' ? 'selected' : '' ?>>Grass</option>
-        <option value="electric" <?= $type1Filtro == 'electric' ? 'selected' : '' ?>>Electric</option>
-        <option value="ice" <?= $type1Filtro == 'ice' ? 'selected' : '' ?>>Ice</option>
-        <option value="fighting" <?= $type1Filtro == 'fighting' ? 'selected' : '' ?>>Fighting</option>
-        <option value="poison" <?= $type1Filtro == 'poison' ? 'selected' : '' ?>>Poison</option>
-        <option value="ground" <?= $type1Filtro == 'ground' ? 'selected' : '' ?>>Ground</option>
-        <option value="flying" <?= $type1Filtro == 'flying' ? 'selected' : '' ?>>Flying</option>
-        <option value="psychic" <?= $type1Filtro == 'psychic' ? 'selected' : '' ?>>Psychic</option>
         <option value="bug" <?= $type1Filtro == 'bug' ? 'selected' : '' ?>>Bug</option>
-        <option value="rock" <?= $type1Filtro == 'rock' ? 'selected' : '' ?>>Rock</option>
-        <option value="ghost" <?= $type1Filtro == 'ghost' ? 'selected' : '' ?>>Ghost</option>
-        <option value="dragon" <?= $type1Filtro == 'dragon' ? 'selected' : '' ?>>Dragon</option>
         <option value="dark" <?= $type1Filtro == 'dark' ? 'selected' : '' ?>>Dark</option>
-        <option value="steel" <?= $type1Filtro == 'steel' ? 'selected' : '' ?>>Steel</option>
+        <option value="dragon" <?= $type1Filtro == 'dragon' ? 'selected' : '' ?>>Dragon</option>
+        <option value="electric" <?= $type1Filtro == 'electric' ? 'selected' : '' ?>>Electric</option>
         <option value="fairy" <?= $type1Filtro == 'fairy' ? 'selected' : '' ?>>Fairy</option>
+        <option value="fighting" <?= $type1Filtro == 'fighting' ? 'selected' : '' ?>>Fighting</option>
+        <option value="fire" <?= $type1Filtro == 'fire' ? 'selected' : '' ?>>Fire</option>
+        <option value="flying" <?= $type1Filtro == 'flying' ? 'selected' : '' ?>>Flying</option>
+        <option value="ghost" <?= $type1Filtro == 'ghost' ? 'selected' : '' ?>>Ghost</option>
+        <option value="grass" <?= $type1Filtro == 'grass' ? 'selected' : '' ?>>Grass</option>
+        <option value="ground" <?= $type1Filtro == 'ground' ? 'selected' : '' ?>>Ground</option>
+        <option value="ice" <?= $type1Filtro == 'ice' ? 'selected' : '' ?>>Ice</option>
         <option value="normal" <?= $type1Filtro == 'normal' ? 'selected' : '' ?>>Normal</option>
+        <option value="poison" <?= $type1Filtro == 'poison' ? 'selected' : '' ?>>Poison</option>
+        <option value="psychic" <?= $type1Filtro == 'psychic' ? 'selected' : '' ?>>Psychic</option>
+        <option value="rock" <?= $type1Filtro == 'rock' ? 'selected' : '' ?>>Rock</option>
+        <option value="steel" <?= $type1Filtro == 'steel' ? 'selected' : '' ?>>Steel</option>
+        <option value="water" <?= $type1Filtro == 'water' ? 'selected' : '' ?>>Water</option>
+
     </select>
 
     <!-- Tipo 2 -->
     <select name="type2">
         <option value="">Tipo 2</option>
-        <option value="fire" <?= $type2Filtro == 'fire' ? 'selected' : '' ?>>Fire</option>
-        <option value="water" <?= $type2Filtro == 'water' ? 'selected' : '' ?>>Water</option>
-        <option value="grass" <?= $type2Filtro == 'grass' ? 'selected' : '' ?>>Grass</option>
-        <option value="electric" <?= $type2Filtro == 'electric' ? 'selected' : '' ?>>Electric</option>
-        <option value="ice" <?= $type2Filtro == 'ice' ? 'selected' : '' ?>>Ice</option>
-        <option value="fighting" <?= $type2Filtro == 'fighting' ? 'selected' : '' ?>>Fighting</option>
-        <option value="poison" <?= $type2Filtro == 'poison' ? 'selected' : '' ?>>Poison</option>
-        <option value="ground" <?= $type2Filtro == 'ground' ? 'selected' : '' ?>>Ground</option>
-        <option value="flying" <?= $type2Filtro == 'flying' ? 'selected' : '' ?>>Flying</option>
-        <option value="psychic" <?= $type2Filtro == 'psychic' ? 'selected' : '' ?>>Psychic</option>
         <option value="bug" <?= $type2Filtro == 'bug' ? 'selected' : '' ?>>Bug</option>
-        <option value="rock" <?= $type2Filtro == 'rock' ? 'selected' : '' ?>>Rock</option>
-        <option value="ghost" <?= $type2Filtro == 'ghost' ? 'selected' : '' ?>>Ghost</option>
-        <option value="dragon" <?= $type2Filtro == 'dragon' ? 'selected' : '' ?>>Dragon</option>
         <option value="dark" <?= $type2Filtro == 'dark' ? 'selected' : '' ?>>Dark</option>
-        <option value="steel" <?= $type2Filtro == 'steel' ? 'selected' : '' ?>>Steel</option>
+        <option value="dragon" <?= $type2Filtro == 'dragon' ? 'selected' : '' ?>>Dragon</option>
+        <option value="electric" <?= $type2Filtro == 'electric' ? 'selected' : '' ?>>Electric</option>
         <option value="fairy" <?= $type2Filtro == 'fairy' ? 'selected' : '' ?>>Fairy</option>
+        <option value="fighting" <?= $type2Filtro == 'fighting' ? 'selected' : '' ?>>Fighting</option>
+        <option value="fire" <?= $type2Filtro == 'fire' ? 'selected' : '' ?>>Fire</option>
+        <option value="flying" <?= $type2Filtro == 'flying' ? 'selected' : '' ?>>Flying</option>
+        <option value="ghost" <?= $type2Filtro == 'ghost' ? 'selected' : '' ?>>Ghost</option>
+        <option value="grass" <?= $type2Filtro == 'grass' ? 'selected' : '' ?>>Grass</option>
+        <option value="ground" <?= $type2Filtro == 'ground' ? 'selected' : '' ?>>Ground</option>
+        <option value="ice" <?= $type2Filtro == 'ice' ? 'selected' : '' ?>>Ice</option>
         <option value="normal" <?= $type2Filtro == 'normal' ? 'selected' : '' ?>>Normal</option>
+        <option value="poison" <?= $type2Filtro == 'poison' ? 'selected' : '' ?>>Poison</option>
+        <option value="psychic" <?= $type2Filtro == 'psychic' ? 'selected' : '' ?>>Psychic</option>
+        <option value="rock" <?= $type2Filtro == 'rock' ? 'selected' : '' ?>>Rock</option>
+        <option value="steel" <?= $type2Filtro == 'steel' ? 'selected' : '' ?>>Steel</option>
+        <option value="water" <?= $type2Filtro == 'water' ? 'selected' : '' ?>>Water</option>
+
     </select>
 
     <!-- Range codice -->
