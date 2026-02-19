@@ -50,9 +50,38 @@ function turni(valut,elemento,danno,accuratezza,effet){
     if(spe1 > spe2){
         turn = 1;
         valuta(valut,elemento,danno,accuratezza,effet);
+        hp2 -= dannotot;
+        hp2 = Math.max(0, Math.floor(hp2));
+        aggiornaBarraHP();
+        if(hp2!=0){
+            turn = 2;
+            valuta(valut,elemento,danno,accuratezza,effet);
+            hp1 -= dannotot
+            hp1 = Math.max(0, Math.floor(hp2));
+            aggiornaBarraHPdes();
+            if(hp2==0){}
+                //switch pokemon
+        }
+        else{}
+            //switch pokemon
     }
     else if(spe2 > spe1){
         turn = 2;
+        valuta(valut,elemento,danno,accuratezza,effet);
+        hp1 -= dannotot;
+        hp1 = Math.max(0, Math.floor(hp2));
+        aggiornaBarraHPdes();
+        if(hp2!=0){
+            turn = 1;
+            valuta(valut,elemento,danno,accuratezza,effet);
+            hp2 -= dannotot;
+            hp2 = Math.max(0, Math.floor(hp2));
+            aggiornaBarraHP();
+            if(hp2==0){}
+                //switch pokemon
+        }
+        else{}
+            //switch pokemon
     }
     else{
         let rand = randomInt(1,2);
@@ -76,8 +105,6 @@ function dannototale(dannotot,elemento){
     random = 0.8 + (Math.random() * 0.2);
 
     dannotot *= random;
-
-
 }
 
 function calcolodanno(elemento,danno,effet,atk,def,protect){
@@ -85,46 +112,49 @@ function calcolodanno(elemento,danno,effet,atk,def,protect){
         dannotot  = (((2*50+10)/250*atk/def*danno)+2);
         //Ho trovato questa Danno = (((2 * Livello + 10) / 250) * Attacco / Difesa * Potenza) + 2
 
-    else
-        dannotot  = (((2*50+10)/250*atk1/def2*danno)+2);
-
         dannotot = dannototale(dannotot,elemento)
-
-    //effet(effet);
-
-    hp2 = Math.max(0, Math.floor(hp2));
-
-    aggiornaBarraHP();
+        //effet(effet);
 }
 
 
 function valuta(valut,elemento,tipo,danno,accuratezza,effet){
-    let damage;
+    let damage
+    let colpire;
     if(valut=="dirreto"){
-        if(tipo=="s"){
+        if(turn==1){
+            colpire = colpire(accuratezza1,accuratezza);
+        }
+        else{
+            colpire = colpire(accuratezza2,accuratezza);
+        }
+        if(tipo=="f"){
             if(turn==1){
-                damage = calcolodanno()
+                calcolodanno(elemento,danno,effet,atk1,def2,protetto2);
+            }
+            else{
+                calcolodanno(elemento,danno,effet,atk2,def1,protetto1);
+            }
+        }
+        else{
+            if(turn==1){
+                calcolodanno(elemento,danno,effet,spa1,spd2,protetto2);
+            }
+            else{
+                calcolodanno(elemento,danno,effet,spa2,spd1,protetto1);
             }
         }
     }
 }
 
-function colpire(elemento,danno,accuratezza,effet){
+function colpire(accuratezzap,accuratezza){
     if(accuratezza != "-"){
         let prob = randomInt(1,100)
         if(prob <= accuratezza){
-            if(danno == 0)
-                effeto(effet);
-            else
-                calcolodanno(elemento,danno,effet);
+            return true;
         }
+        else return false;
     }
-    else{
-        if(danno == 0)
-            effeto(effet);
-        else
-            calcolodanno(elemento,danno,effet);
-    }
+    else return true
 }
 
 function effeto(effet){
