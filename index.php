@@ -1,4 +1,6 @@
 <?php
+session_start();
+
 $host = "localhost";
 $user = "root";
 $password = "";
@@ -87,11 +89,17 @@ $result = $conn->query($sql);*/
     </div>
 
     <div class="login-container">
-        <div class="login-bar">
-            <img src="Login.png" alt="Login">
+    <a href="login.php" class="login-bar">
+        <img src="Login.png" alt="Login">
+
+        <?php if(isset($_SESSION['user_id'])): ?>
+            <span>Ciao <?= ucfirst($_SESSION['username']) ?></span>
+        <?php else: ?>
             <span>Login / Registrati</span>
-        </div>
-    </div>
+        <?php endif; ?>
+
+    </a>
+</div>
 </header>
 
 <!-- HERO SECTION -->
