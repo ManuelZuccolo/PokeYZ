@@ -464,15 +464,60 @@
 </head>
 <body>
     <?php
-    // Array con i dati dei Pokémon (solo per il menu Pokémon)
-    $team = [
-        ['name' => 'CHARMELEON', 'level' => 50, 'hp' => 134, 'max_hp' => 134],
-        ['name' => 'BULBASAUR', 'level' => 50, 'hp' => 120, 'max_hp' => 120],
-        ['name' => 'SQUIRTLE', 'level' => 50, 'hp' => 120, 'max_hp' => 120],
-        ['name' => 'PIKACHU', 'level' => 50, 'hp' => 100, 'max_hp' => 100],
-        ['name' => 'RATTATA', 'level' => 50, 'hp' => 90, 'max_hp' => 90],
-        ['name' => 'PIDGEY', 'level' => 50, 'hp' => 100, 'max_hp' => 100]
-    ];
+    $servername = "localhost";
+    $username = "root";
+    $password = "";
+    $dbname = "pokeyz_db";
+
+    $conn = new mysqli($servername, $username, $password, $dbname);
+
+    // Verifica connessione
+    if ($conn->connect_error) {
+        die("Connessione fallita: " . $conn->connect_error);
+    }
+
+    // Recupera Charmeleon (cod = 5)
+    $sql = "SELECT * FROM pokemon WHERE cod = 5 AND sec_form = 'BASE'";
+    $result = $conn->query($sql);
+    $charmeleon = $result->fetch_assoc();
+
+    // Recupera Mewtwo (cod = 150)
+    $sql = "SELECT * FROM pokemon WHERE cod = 150 AND sec_form = 'BASE'";
+    $result = $conn->query($sql);
+    $mewtwo = $result->fetch_assoc();
+
+    // Recupera le mosse di Charmeleon
+    $sql = "SELECT m.* FROM mossa m
+            JOIN mossa_x_pokemon mxp ON m.id_mossa = mxp.id_mossa
+            WHERE mxp.cod = 5 AND mxp.sec_form = 'BASE'";
+    $result = $conn->query($sql);
+    $charmeleon_moves = [];
+    while($row = $result->fetch_assoc()) {
+        $charmeleon_moves[] = $row;
+    }
+
+    // Recupera la squadra dell'utente (id_utente = 7)
+    $sql = "SELECT p.*, sp.slot FROM squadra s
+            JOIN squadra_pokemon sp ON s.id_squadra = sp.id_squadra
+            JOIN pokemon p ON sp.cod = p.cod AND sp.sec_form = p.sec_form
+            WHERE s.codice_utente = 7
+            ORDER BY sp.slot";
+    $result = $conn->query($sql);
+    $team_pokemon = [];
+    while($row = $result->fetch_assoc()) {
+        $team_pokemon[] = $row;
+    }
+
+    // Prepara l'array team per il menu Pokémon
+    $team = [];
+    foreach($team_pokemon as $pokemon) {
+        $team[] = [
+            'name' => strtoupper($pokemon['nome']),
+            'level' => 50, // Puoi modificare se hai il livello nel database
+            'hp' => $pokemon['HP'],
+            'max_hp' => $pokemon['HP']
+        ];
+    }
     ?>
     
     <div class="game-container">
@@ -488,13 +533,13 @@
                     <!-- Info HP a destra -->
                     <div class="info-frame" id="playerInfo">
                         <div class="pokemon-name">
-                            CHARMELEON<span class="registered">®</span>
+                            <?php echo strtoupper($charmeleon['nome']); ?><span class="registered">®</span>
                         </div>
                         <div class="level-info">Lv50</div>
                         <div class="hp-container">
                             <div class="hp-header">
                                 <span class="hp-label">HP</span>
-                                <span class="hp-numbers" id="playerHpText">134/134</span>
+                                <span class="hp-numbers" id="playerHpText"><?php echo $charmeleon['HP']; ?>/<?php echo $charmeleon['HP']; ?></span>
                             </div>
                             <div class="hp-bar-bg">
                                 <div class="hp-bar-fill" id="playerHpBar" style="width: 100%;"></div>
@@ -508,13 +553,13 @@
                     <!-- Info HP a sinistra -->
                     <div class="info-frame enemy-frame" id="enemyInfo">
                         <div class="pokemon-name">
-                            MEWTWO<span class="registered">®</span>
+                            <?php echo strtoupper($mewtwo['nome']); ?><span class="registered">®</span>
                         </div>
                         <div class="level-info">Lv70</div>
                         <div class="hp-container">
                             <div class="hp-header">
                                 <span class="hp-label">HP</span>
-                                <span class="hp-numbers" id="enemyHpText">182/182</span>
+                                <span class="hp-numbers" id="enemyHpText"><?php echo $mewtwo['HP']; ?>/<?php echo $mewtwo['HP']; ?></span>
                             </div>
                             <div class="hp-bar-bg">
                                 <div class="hp-bar-fill" id="enemyHpBar" style="width: 100%;"></div>
@@ -532,7 +577,7 @@
             <div class="command-area">
                 <!-- Barra domanda -->
                 <div class="question-box" id="questionBox">
-                    WHAT WILL<br>CHARMELEON DO?
+                    WHAT WILL<br><?php echo strtoupper($charmeleon['nome']); ?> DO?
                 </div>
 
                 <!-- Menu principale -->
@@ -547,20 +592,41 @@
                     </div>
                 </div>
 
-                <!-- Menu mosse per Charmeleon -->
+                <!-- Menu mosse per Charmeleon (dinamico dal database) -->
                 <div class="moves-menu" id="movesMenu">
                     <div class="moves-column">
-                        <button class="move-button selected" data-move="scratch" data-power="40" data-type="normale" data-accuracy="100" data-effect="">SCRATCH</button>
-                        <button class="move-button" data-move="ember" data-power="40" data-type="fuoco" data-accuracy="100" data-effect="burn30">EMBER</button>
+                        <?php 
+                        for($i = 0; $i < min(2, count($charmeleon_moves)); $i++): 
+                            $move = $charmeleon_moves[$i];
+                        ?>
+                        <button class="move-button <?php echo $i === 0 ? 'selected' : ''; ?>" 
+                                data-move="<?php echo strtolower($move['nome']); ?>" 
+                                data-power="<?php echo $move['danno']; ?>" 
+                                data-type="<?php echo strtolower($move['tipo']); ?>" 
+                                data-accuracy="<?php echo $move['accuratezza']; ?>" 
+                                data-effect="">
+                            <?php echo strtoupper($move['nome']); ?>
+                        </button>
+                        <?php endfor; ?>
                     </div>
                     <div class="moves-column">
-                        <button class="move-button" data-move="dragonrage" data-power="40" data-type="drago" data-accuracy="100" data-effect="">DRAGON RAGE</button>
-                        <button class="move-button" data-move="flamethrower" data-power="90" data-type="fuoco" data-accuracy="100" data-effect="burn30">FLAMETHROWER</button>
+                        <?php for($i = 2; $i < min(4, count($charmeleon_moves)); $i++): 
+                            $move = $charmeleon_moves[$i];
+                        ?>
+                        <button class="move-button" 
+                                data-move="<?php echo strtolower($move['nome']); ?>" 
+                                data-power="<?php echo $move['danno']; ?>" 
+                                data-type="<?php echo strtolower($move['tipo']); ?>" 
+                                data-accuracy="<?php echo $move['accuratezza']; ?>" 
+                                data-effect="">
+                            <?php echo strtoupper($move['nome']); ?>
+                        </button>
+                        <?php endfor; ?>
                     </div>
                     <button class="back-button" id="backFromMovesBtn">← BACK</button>
                 </div>
 
-                <!-- Menu Pokémon con placeholder -->
+                <!-- Menu Pokémon con dati dal database -->
                 <div class="pokemon-menu" id="pokemonMenu">
                     <?php foreach($team as $index => $pokemon): 
                         $hpPercentage = ($pokemon['hp'] / $pokemon['max_hp']) * 100;
@@ -589,6 +655,29 @@
     </div>
 
     <script>
+        // Passa i dati dal PHP al JavaScript
+        const playerPokemon = {
+            name: '<?php echo strtoupper($charmeleon['nome']); ?>',
+            hp: <?php echo $charmeleon['HP']; ?>,
+            maxHp: <?php echo $charmeleon['HP']; ?>,
+            atk: <?php echo $charmeleon['ATK']; ?>,
+            def: <?php echo $charmeleon['DEF']; ?>,
+            spa: <?php echo $charmeleon['SP_ATK']; ?>,
+            spd: <?php echo $charmeleon['SP_DEF']; ?>,
+            spe: <?php echo $charmeleon['SPE']; ?>
+        };
+        
+        const enemyPokemon = {
+            name: '<?php echo strtoupper($mewtwo['nome']); ?>',
+            hp: <?php echo $mewtwo['HP']; ?>,
+            maxHp: <?php echo $mewtwo['HP']; ?>,
+            atk: <?php echo $mewtwo['ATK']; ?>,
+            def: <?php echo $mewtwo['DEF']; ?>,
+            spa: <?php echo $mewtwo['SP_ATK']; ?>,
+            spd: <?php echo $mewtwo['SP_DEF']; ?>,
+            spe: <?php echo $mewtwo['SPE']; ?>
+        };
+
         // Riferimenti ai menu
         const mainMenu = document.getElementById('mainMenu');
         const movesMenu = document.getElementById('movesMenu');
@@ -608,7 +697,7 @@
             mainMenu.classList.remove('hidden');
             movesMenu.classList.remove('active');
             pokemonMenu.classList.remove('active');
-            questionBox.innerHTML = 'WHAT WILL<br>CHARMELEON DO?';
+            questionBox.innerHTML = 'WHAT WILL<br>' + playerPokemon.name + ' DO?';
             
             // Rimuovi selected da tutti i bottoni
             document.querySelectorAll('.command-button, .move-button, .pokemon-button').forEach(btn => {
