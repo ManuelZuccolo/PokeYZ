@@ -64,13 +64,7 @@ $result = $conn->query($sql);
 
 
 
-/*$sql = "
-SELECT cod, sec_form, nome, tipo1, tipo2
-FROM Pokemon
-ORDER BY cod ASC, sec_form ASC
-";
 
-$result = $conn->query($sql);*/
 ?>
 
 <!DOCTYPE html>
@@ -80,7 +74,7 @@ $result = $conn->query($sql);*/
     <title>Pokédex Project</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="index-page">
 
 <!-- HEADER -->
 <header>

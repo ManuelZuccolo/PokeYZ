@@ -44,8 +44,14 @@ if(isset($_POST['register'])){
             $stmt->bind_param("ss", $nome, $hash);
 
             if($stmt->execute()){
-                $_SESSION['user_id'] = $stmt->insert_id;
+                $user_id = $stmt->insert_id; // codice utente appena creato
+                $_SESSION['user_id'] = $user_id;
                 $_SESSION['username'] = $nome;
+
+                // CREAZIONE SQUADRA AUTOMATICA
+                $stmt_squadra = $conn->prepare("INSERT INTO Squadra (id_squadra, codice_utente) VALUES (?, ?)");
+                $stmt_squadra->bind_param("ii", $user_id, $user_id);
+                $stmt_squadra->execute();
 
                 header("Location: login.php");
                 exit();
@@ -168,12 +174,13 @@ if(isset($_GET['logout'])){
 
 <?php else: ?>
 
-    <div class="auth-card">
+<div class="auth-card">
     <h2>Benvenuto <?= ucfirst($_SESSION['username']) ?>!</h2>
 
     <div class="btn-wrapper">
     <a href="squadra.php" class="main-btn">Vai alla mia squadra</a>
     <a href="index.php" class="cancel-btn">Torna alla Home</a>
+    <a href="login.php?logout=true" class="cancel-btn">Logout</a>
 </div>
 </div>
 
