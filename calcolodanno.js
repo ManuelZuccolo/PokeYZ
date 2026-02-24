@@ -46,6 +46,10 @@ function aggiornaBarraHP() {
     aggiornaBarraHPSinistra();
 }
 
+function switchpokemon(){
+    
+}
+
 function turni(valut,elemento,danno,accuratezza,effet){
     if(spe1 > spe2){
         turn = 1;
@@ -105,6 +109,8 @@ function dannototale(dannotot,elemento){
     random = 0.8 + (Math.random() * 0.2);
 
     dannotot *= random;
+
+
 }
 
 function calcolodanno(elemento,danno,effet,atk,def,protect){
@@ -112,49 +118,46 @@ function calcolodanno(elemento,danno,effet,atk,def,protect){
         dannotot  = (((2*50+10)/250*atk/def*danno)+2);
         //Ho trovato questa Danno = (((2 * Livello + 10) / 250) * Attacco / Difesa * Potenza) + 2
 
+    else
+        dannotot  = (((2*50+10)/250*atk1/def2*danno)+2);
+
         dannotot = dannototale(dannotot,elemento)
-        //effet(effet);
+
+    //effet(effet);
+
+    hp2 = Math.max(0, Math.floor(hp2));
+
+    aggiornaBarraHP();
 }
 
 
 function valuta(valut,elemento,tipo,danno,accuratezza,effet){
-    let damage
-    let colpire;
+    let damage;
     if(valut=="dirreto"){
-        if(turn==1){
-            colpire = colpire(accuratezza1,accuratezza);
-        }
-        else{
-            colpire = colpire(accuratezza2,accuratezza);
-        }
-        if(tipo=="f"){
+        if(tipo=="s"){
             if(turn==1){
-                calcolodanno(elemento,danno,effet,atk1,def2,protetto2);
-            }
-            else{
-                calcolodanno(elemento,danno,effet,atk2,def1,protetto1);
-            }
-        }
-        else{
-            if(turn==1){
-                calcolodanno(elemento,danno,effet,spa1,spd2,protetto2);
-            }
-            else{
-                calcolodanno(elemento,danno,effet,spa2,spd1,protetto1);
+                damage = calcolodanno()
             }
         }
     }
 }
 
-function colpire(accuratezzap,accuratezza){
+function colpire(elemento,danno,accuratezza,effet){
     if(accuratezza != "-"){
         let prob = randomInt(1,100)
         if(prob <= accuratezza){
-            return true;
+            if(danno == 0)
+                effeto(effet);
+            else
+                calcolodanno(elemento,danno,effet);
         }
-        else return false;
     }
-    else return true
+    else{
+        if(danno == 0)
+            effeto(effet);
+        else
+            calcolodanno(elemento,danno,effet);
+    }
 }
 
 function effeto(effet){
@@ -190,87 +193,4 @@ function stato(effeto1,effeto2){
         hp2 -= daTogliere4*avvelentoturni2
         avvelentoturni2 *= 2;
     }
-}
-
-
-
-
-
-
-
-
-
-
-
-//Parte Giallo non cinese
-/*Io avevo pensato di farla così:
-    -danno fisso per entrambi, mini formula
-    -turno di combattimento con pari dispari così teniamo conto dei turni di gioco (more or less)
-    -controllo costante della vita di entrambi per vedere se uno vince
-*/
-function calcoloDanno(attacco, difesa) {
-    let livello = 50;
-    let potenza = 80; //potenza fissa perché non ho voglia
-    
-    let danno = (((2 * livello + 10) / 250) * (attacco / difesa) * potenza) + 2;  
-    return Math.floor(danno);
-}
-
-
-function turnoCombattimento() {
-
-
-    if (turno%2==1) {
-        attacco1();
-        if (hp2 > 0) attacco2();
-    } else {
-        attacco2();
-        if (hp1 > 0) attacco1();
-    }
-
-    turno++;
-}
-
-
-
-function attacco1() {
-    let danno = calcoloDanno(atk1, def2);
-    hp2 -= danno;
-    if (hp2 < 0) hp2 = 0;
-    
-    console.log("Charmeleon infligge " + danno + " danni!");
-    console.log("HP Mewtwo: " + hp2);
-}
-
-function attacco2() {
-    let danno = calcoloDanno(atk2, def1);
-    hp1 -= danno;
-    if (hp1 < 0) hp1 = 0;
-    
-    console.log("Mewtwo infligge " + danno + " danni!");
-    console.log("HP Charmeleon: " + hp1);
-}
-
-
-
-function controllaVincitore() {
-    if (hp1 <= 0) {
-        console.log("Mewtwo ha vinto!");
-        return true;
-    }
-    if (hp2 <= 0) {
-        console.log("Charmeleon ha vinto!");
-        return true;
-    }
-    return false;
-}
-
-
-
-function iniziaBattaglia() {
-    if(spe1 > spe2) turno = 1; else turno=2;
-    while (hp1 > 0 && hp2 > 0) {
-        turnoCombattimento();
-    }
-    controllaVincitore();
 }
