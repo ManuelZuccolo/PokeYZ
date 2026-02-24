@@ -36,11 +36,24 @@ function getNome($conn,$table,$id){
 // STEP logica (come prima)
 if($step==='scegli_pokemon' && isset($_POST['pokemon_cod'])){
     $pokemon_cod = (int)$_POST['pokemon_cod'];
-    $stmt = $conn->prepare("SELECT * FROM Squadra_Pokemon WHERE id_squadra=? AND cod=?");
-    $stmt->bind_param("ii",$id_squadra,$pokemon_cod);
+    $pokemon_sec_form = $_POST['pokemon_sec_form'];
+
+    // Controllo se è già in squadra (stessa forma!)
+    $stmt = $conn->prepare("
+        SELECT * 
+        FROM Squadra_Pokemon 
+        WHERE id_squadra=? AND cod=? AND sec_form=?
+    ");
+    $stmt->bind_param("iis", $id_squadra, $pokemon_cod, $pokemon_sec_form);
     $stmt->execute();
-    if($stmt->get_result()->num_rows>0) $errors[]="Hai già scelto questo Pokémon!";
-    else { $_SESSION['scegliendo_pokemon']=$pokemon_cod; $step='scegli_abilita'; }
+
+    if($stmt->get_result()->num_rows>0){
+        $errors[]="Hai già scelto questo Pokémon!";
+    } else {
+        $_SESSION['scegliendo_pokemon']=$pokemon_cod;
+        $_SESSION['scegliendo_sec_form']=$pokemon_sec_form;
+        $step='scegli_abilita';
+    }
 }
 
 if($step==='scegli_abilita' && isset($_POST['abilita_id'])){
@@ -55,17 +68,21 @@ if($step==='scegli_mosse' && isset($_POST['mosse'])){
     else {
         $pokemon_cod=$_SESSION['scegliendo_pokemon'];
         $abilita_id=$_SESSION['abilita_scelta'];
-        $sec_form = 'BASE';
+        $sec_form = $_SESSION['scegliendo_sec_form'];
         $m1=$mosse[0]??null;
         $m2=$mosse[1]??null;
         $m3=$mosse[2]??null;
         $m4=$mosse[3]??null;
         $stmt=$conn->prepare("INSERT INTO Squadra_Pokemon
-            (id_squadra, slot, cod, mossa1, mossa2, mossa3, mossa4, abilita_scelta)
-            VALUES (?,?,?,?,?,?,?,?)");
-        $stmt->bind_param("iiiiiiii",$id_squadra,$slot_libero,$pokemon_cod,$m1,$m2,$m3,$m4,$abilita_id);
+            (id_squadra, slot, cod, sec_form, mossa1, mossa2, mossa3, mossa4, abilita_scelta)
+            VALUES (?,?,?,?,?,?,?,?,?)");
+        $stmt->bind_param("iiisiiiii",$id_squadra,$slot_libero,$pokemon_cod,$sec_form,$m1,$m2,$m3,$m4,$abilita_id);
         $stmt->execute();
-        unset($_SESSION['scegliendo_pokemon'],$_SESSION['abilita_scelta']);
+        unset(
+                $_SESSION['scegliendo_pokemon'],
+                $_SESSION['scegliendo_sec_form'],
+                $_SESSION['abilita_scelta']
+            );
         $slot_libero++;
         $step='scegli_pokemon';
     }
@@ -73,7 +90,7 @@ if($step==='scegli_mosse' && isset($_POST['mosse'])){
 
 // DATI PER FORM
 $ids_scelti=[];
-$stmt=$conn->prepare("SELECT cod FROM Squadra_Pokemon WHERE id_squadra=?");
+$stmt=$conn->prepare("SELECT cod, sec_form FROM Squadra_Pokemon WHERE id_squadra=?");
 $stmt->bind_param("i",$id_squadra);
 $stmt->execute();
 $res=$stmt->get_result(); while($r=$res->fetch_assoc()) $ids_scelti[]=$r['cod'];
@@ -83,7 +100,7 @@ $poke_res=$conn->query("SELECT cod, nome, sec_form, tipo1, tipo2 FROM Pokemon WH
 $abilita_disponibili=[];
 if(isset($_SESSION['scegliendo_pokemon'])){
     $pid=$_SESSION['scegliendo_pokemon'];
-    $stmt=$conn->prepare("SELECT pa.id_abilita,a.nome FROM Pokemon_Abilita pa JOIN Abilita a ON pa.id_abilita=a.id_Abilita WHERE pa.cod=?");
+    $stmt=$conn->prepare("SELECT pa.id_abilita,a.nome FROM Abilita_Pokemon pa JOIN Abilita a ON pa.id_abilita=a.id_Abilita WHERE pa.cod=?");
     $stmt->bind_param("i",$pid); $stmt->execute();
     $res=$stmt->get_result(); while($r=$res->fetch_assoc()) $abilita_disponibili[]=$r;
 }
@@ -91,7 +108,7 @@ if(isset($_SESSION['scegliendo_pokemon'])){
 $mosse_disponibili=[];
 if(isset($_SESSION['scegliendo_pokemon'])){
     $pid=$_SESSION['scegliendo_pokemon'];
-    $stmt=$conn->prepare("SELECT pm.id_mossa,m.nome FROM Pokemon_Mosse pm JOIN Mossa m ON pm.id_mossa=m.id_Mossa WHERE pm.cod=?");
+    $stmt=$conn->prepare("SELECT pm.id_mossa,m.nome FROM Mossa_x_pokemon pm JOIN Mossa m ON pm.id_mossa=m.id_Mossa WHERE pm.cod=?");
     $stmt->bind_param("i",$pid); $stmt->execute();
     $res=$stmt->get_result(); while($r=$res->fetch_assoc()) $mosse_disponibili[]=$r;
 }
@@ -139,6 +156,7 @@ $imgName=strtolower($p['nome']); if($p['sec_form']!='BASE') $imgName.="_".strtol
 <form method="POST" style="display:inline;">
 <input type="hidden" name="step" value="scegli_pokemon">
 <input type="hidden" name="pokemon_cod" value="<?= $p['cod'] ?>">
+<input type="hidden" name="pokemon_sec_form" value="<?= $p['sec_form'] ?>">
 <button type="submit" class="choice-btn">Seleziona</button>
 </form>
 </td>
