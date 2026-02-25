@@ -27,16 +27,12 @@
         die("Connessione fallita: " . $conn->connect_error);
     }
 
-    echo "<!-- Connessione al database riuscita -->\n";
-
     // ============================================================
     // RECUPERO DATI DALLA TABELLA SQUADRA
     // ============================================================
     
-    // 1. Prima recupero l'id_squadra per l'utente 7
+    // Recupero l'id_squadra per l'utente 7
     $sql_squadra = "SELECT id_squadra FROM squadra WHERE codice_utente = 7";
-    echo "<!-- Query squadra: $sql_squadra -->\n";
-    
     $result_squadra = $conn->query($sql_squadra);
     
     if ($result_squadra === false) {
@@ -46,17 +42,13 @@
     if ($result_squadra->num_rows > 0) {
         $row_squadra = $result_squadra->fetch_assoc();
         $id_squadra = $row_squadra['id_squadra'];
-        echo "<!-- ID squadra trovato: $id_squadra -->\n";
         
-        // 2. Recupero tutti i Pokémon nella squadra con i loro dettagli
-        // NOTA: Ho rimosso 'sp.livello' perché non esiste, useremo il livello base dal database
+        // Recupero tutti i Pokémon nella squadra
         $sql_pokemon_squadra = "SELECT p.*, sp.slot 
                                 FROM squadra_pokemon sp
                                 JOIN pokemon p ON sp.cod = p.cod AND sp.sec_form = p.sec_form
                                 WHERE sp.id_squadra = $id_squadra
                                 ORDER BY sp.slot";
-        
-        echo "<!-- Query pokemon squadra: $sql_pokemon_squadra -->\n";
         
         $result_pokemon_squadra = $conn->query($sql_pokemon_squadra);
         
@@ -67,64 +59,20 @@
         $team_pokemon = [];
         while($row = $result_pokemon_squadra->fetch_assoc()) {
             $team_pokemon[] = $row;
-            echo "<!-- Trovato Pokémon: " . $row['nome'] . " (slot " . $row['slot'] . ") -->\n";
         }
         
         if (empty($team_pokemon)) {
             die("Nessun Pokémon trovato nella squadra con ID $id_squadra");
         }
     } else {
-        die("Nessuna squadra trovata per l'utente 7. Verifica che nella tabella squadra ci sia un record con codice_utente = 7");
+        die("Nessuna squadra trovata per l'utente 7");
     }
 
     // ============================================================
-    // RECUPERO IL PRIMO POKEMON DELLA SQUADRA PER IL COMBATTIMENTO
-    // ============================================================
-    
-    // Prendo il primo Pokémon della squadra (slot 1)
-    $pokemon_giocatore = null;
-    foreach($team_pokemon as $pokemon) {
-        if($pokemon['slot'] == 1) {
-            $pokemon_giocatore = $pokemon;
-            break;
-        }
-    }
-    
-    if (!$pokemon_giocatore) {
-        // Se non c'è Pokémon nello slot 1, prendo il primo disponibile
-        $pokemon_giocatore = $team_pokemon[0];
-        echo "<!-- Attenzione: Nessun Pokémon nello slot 1, usando " . $pokemon_giocatore['nome'] . " -->\n";
-    }
-
-    echo "<!-- Pokémon giocatore: " . $pokemon_giocatore['nome'] . " -->\n";
-
-    // RECUPERO LE MOSSE DEL POKEMON GIOCATORE
-    $sql_mosse = "SELECT m.* FROM mossa m
-                  JOIN mossa_x_pokemon mxp ON m.id_mossa = mxp.id_mossa
-                  WHERE mxp.cod = " . $pokemon_giocatore['cod'] . " 
-                  AND mxp.sec_form = '" . $pokemon_giocatore['sec_form'] . "'";
-    
-    echo "<!-- Query mosse: $sql_mosse -->\n";
-    
-    $result_mosse = $conn->query($sql_mosse);
-    
-    if ($result_mosse === false) {
-        die("Errore nella query mosse: " . $conn->error);
-    }
-    
-    $pokemon_mosse = [];
-    while($row = $result_mosse->fetch_assoc()) {
-        $pokemon_mosse[] = $row;
-        echo "<!-- Mossa trovata: " . $row['nome'] . " (danno: " . $row['danno'] . ") -->\n";
-    }
-
-    // ============================================================
-    // RECUPERO IL POKEMON NEMICO (fisso Mewtwo per ora)
+    // RECUPERO IL POKEMON NEMICO (Mewtwo)
     // ============================================================
     
     $sql_nemico = "SELECT * FROM pokemon WHERE cod = 150 AND sec_form = 'BASE'";
-    echo "<!-- Query nemico: $sql_nemico -->\n";
-    
     $result_nemico = $conn->query($sql_nemico);
     
     if ($result_nemico === false) {
@@ -133,69 +81,88 @@
     
     if ($result_nemico->num_rows > 0) {
         $pokemon_nemico = $result_nemico->fetch_assoc();
-        echo "<!-- Pokémon nemico: " . $pokemon_nemico['nome'] . " -->\n";
     } else {
-        die("Mewtwo non trovato nel database (cod=150, sec_form='BASE')");
+        die("Mewtwo non trovato nel database");
     }
 
     // ============================================================
-    // IMPOSTAZIONE LIVELLI (fissi per ora)
+    // IMPOSTAZIONE LIVELLI E HP
     // ============================================================
     
-    // Livello fisso per tutti i Pokémon del giocatore
     $livello_base_giocatore = 50;
     
-    // ============================================================
-    // CALCOLO HP E PREPARAZIONE ARRAY TEAM PER IL MENU
-    // ============================================================
-    
-    $team_menu = [];
+    // Prepara i dati di tutti i Pokémon della squadra
+    $team_data = [];
     foreach($team_pokemon as $pokemon) {
-        // Calcolo HP massimi in base al livello fisso
-        // Formula: HP_max = HP_base + (livello * 2)
         $hp_base = $pokemon['HP'];
         $hp_massimi = $hp_base + ($livello_base_giocatore * 2);
         
-        // Tutti i Pokémon partono con HP pieni
-        $hp_attuali = $hp_massimi;
-        
-        $team_menu[] = [
+        $team_data[] = [
+            'cod' => $pokemon['cod'],
             'name' => strtoupper($pokemon['nome']),
             'level' => $livello_base_giocatore,
-            'hp' => $hp_attuali,
+            'hp' => $hp_massimi, // Inizia con HP pieni
             'max_hp' => $hp_massimi,
-            'slot' => $pokemon['slot']
+            'atk' => $pokemon['ATK'],
+            'def' => $pokemon['DEF'],
+            'spa' => $pokemon['SP_ATK'],
+            'spd' => $pokemon['SP_DEF'],
+            'spe' => $pokemon['SPE'],
+            'slot' => $pokemon['slot'],
+            'sec_form' => $pokemon['sec_form']
         ];
     }
     
-    // Calcolo HP per il Pokémon giocatore in battaglia
-    $hp_base_giocatore = $pokemon_giocatore['HP'];
-    $hp_massimi_giocatore = $hp_base_giocatore + ($livello_base_giocatore * 2);
-    $hp_attuali_giocatore = $hp_massimi_giocatore;
-    $percentuale_hp_giocatore = 100;
+    // Il primo Pokémon (slot 1) è quello attuale
+    $pokemon_attuale = null;
+    foreach($team_data as $pokemon) {
+        if($pokemon['slot'] == 1) {
+            $pokemon_attuale = $pokemon;
+            break;
+        }
+    }
     
-    echo "<!-- Team preparato con " . count($team_menu) . " Pokémon (livello fisso: $livello_base_giocatore) -->\n";
+    if (!$pokemon_attuale) {
+        $pokemon_attuale = $team_data[0];
+    }
+    
+    // Recupero le mosse del Pokémon attuale
+    $sql_mosse = "SELECT m.* FROM mossa m
+                  JOIN mossa_x_pokemon mxp ON m.id_mossa = mxp.id_mossa
+                  WHERE mxp.cod = " . $pokemon_attuale['cod'] . " 
+                  AND mxp.sec_form = '" . $pokemon_attuale['sec_form'] . "'";
+    
+    $result_mosse = $conn->query($sql_mosse);
+    
+    if ($result_mosse === false) {
+        die("Errore nella query mosse: " . $conn->error);
+    }
+    
+    $mosse_attuali = [];
+    while($row = $result_mosse->fetch_assoc()) {
+        $mosse_attuali[] = $row;
+    }
     ?>
     
     <div class="game-container">
         <div class="battle-screen">
             <!-- AREA POKEMON IN BATTAGLIA -->
             <div class="pokemon-battle-area">
-                <!-- POKEMON GIOCATORE (dalla squadra) - in basso a sinistra -->
-                <div class="player-pokemon">
+                <!-- POKEMON GIOCATORE (attuale) - in basso a sinistra -->
+                <div class="player-pokemon" id="playerPokemonContainer">
                     <div class="sprite-container">
                         <div class="sprite-placeholder"></div>
                     </div>
                     <div class="info-frame" id="playerInfo">
-                        <div class="pokemon-name">
-                            <?php echo strtoupper($pokemon_giocatore['nome']); ?><span class="registered">®</span>
+                        <div class="pokemon-name" id="playerName">
+                            <?php echo $pokemon_attuale['name']; ?><span class="registered">®</span>
                         </div>
-                        <div class="level-info">Lv<?php echo $livello_base_giocatore; ?></div>
+                        <div class="level-info" id="playerLevel">Lv<?php echo $pokemon_attuale['level']; ?></div>
                         <div class="hp-container">
                             <div class="hp-header">
                                 <span class="hp-label">HP</span>
                                 <span class="hp-numbers" id="playerHpText">
-                                    <?php echo $hp_attuali_giocatore . '/' . $hp_massimi_giocatore; ?>
+                                    <?php echo $pokemon_attuale['hp'] . '/' . $pokemon_attuale['max_hp']; ?>
                                 </span>
                             </div>
                             <div class="hp-bar-bg">
@@ -233,7 +200,7 @@
             <!-- AREA COMANDI -->
             <div class="command-area">
                 <div class="question-box" id="questionBox">
-                    WHAT WILL<br><?php echo strtoupper($pokemon_giocatore['nome']); ?> DO?
+                    WHAT WILL<br><span id="currentPokemonName"><?php echo $pokemon_attuale['name']; ?></span> DO?
                 </div>
 
                 <!-- MENU PRINCIPALE -->
@@ -248,13 +215,12 @@
                     </div>
                 </div>
 
-                <!-- MENU MOSSE (del Pokémon giocatore) -->
+                <!-- MENU MOSSE (dinamico) -->
                 <div class="moves-menu" id="movesMenu">
-                    <?php if (count($pokemon_mosse) > 0): ?>
-                    <div class="moves-column">
+                    <div class="moves-column" id="movesColumn1">
                         <?php 
-                        for($i = 0; $i < min(2, count($pokemon_mosse)); $i++): 
-                            $move = $pokemon_mosse[$i];
+                        for($i = 0; $i < min(2, count($mosse_attuali)); $i++): 
+                            $move = $mosse_attuali[$i];
                         ?>
                         <button class="move-button <?php echo $i === 0 ? 'selected' : ''; ?>" 
                                 data-move="<?php echo strtolower($move['nome']); ?>" 
@@ -265,9 +231,9 @@
                         </button>
                         <?php endfor; ?>
                     </div>
-                    <div class="moves-column">
-                        <?php for($i = 2; $i < min(4, count($pokemon_mosse)); $i++): 
-                            $move = $pokemon_mosse[$i];
+                    <div class="moves-column" id="movesColumn2">
+                        <?php for($i = 2; $i < min(4, count($mosse_attuali)); $i++): 
+                            $move = $mosse_attuali[$i];
                         ?>
                         <button class="move-button" 
                                 data-move="<?php echo strtolower($move['nome']); ?>" 
@@ -278,26 +244,29 @@
                         </button>
                         <?php endfor; ?>
                     </div>
-                    <?php else: ?>
-                    <div class="no-moves">NESSUNA MOSSA DISPONIBILE</div>
-                    <?php endif; ?>
                     <button class="back-button" id="backFromMovesBtn">← BACK</button>
                 </div>
 
-                <!-- MENU POKEMON (con tutta la squadra) -->
+                <!-- MENU POKEMON -->
                 <div class="pokemon-menu" id="pokemonMenu">
-                    <?php foreach($team_menu as $index => $pokemon): 
+                    <?php foreach($team_data as $index => $pokemon): 
                         $hpPercentage = ($pokemon['hp'] / $pokemon['max_hp']) * 100;
-                        $selectedClass = ($index === 0) ? 'selected' : '';
-                        // Tutti i Pokémon hanno HP pieni all'inizio
-                        $disabled = '';
+                        $selectedClass = ($pokemon['slot'] == $pokemon_attuale['slot']) ? 'selected' : '';
                     ?>
                     <button class="pokemon-button <?php echo $selectedClass; ?>" 
-                            id="pokemon<?php echo $pokemon['slot']; ?>"
+                            id="pokemonSlot<?php echo $pokemon['slot']; ?>"
                             data-slot="<?php echo $pokemon['slot']; ?>"
+                            data-cod="<?php echo $pokemon['cod']; ?>"
+                            data-name="<?php echo $pokemon['name']; ?>"
+                            data-level="<?php echo $pokemon['level']; ?>"
                             data-hp="<?php echo $pokemon['hp']; ?>"
                             data-maxhp="<?php echo $pokemon['max_hp']; ?>"
-                            <?php echo $disabled; ?>>
+                            data-atk="<?php echo $pokemon['atk']; ?>"
+                            data-def="<?php echo $pokemon['def']; ?>"
+                            data-spa="<?php echo $pokemon['spa']; ?>"
+                            data-spd="<?php echo $pokemon['spd']; ?>"
+                            data-spe="<?php echo $pokemon['spe']; ?>"
+                            data-secform="<?php echo $pokemon['sec_form']; ?>">
                         <span><?php echo $pokemon['name']; ?></span>
                         <span class="pokemon-status">Lv<?php echo $pokemon['level']; ?></span>
                         <div class="pokemon-hp-bar">
@@ -319,19 +288,11 @@
     </div>
 
     <script>
-        // PASSAGGIO DATI DAL PHP AL JAVASCRIPT
-        const playerPokemon = {
-            name: '<?php echo strtoupper($pokemon_giocatore['nome']); ?>',
-            cod: <?php echo $pokemon_giocatore['cod']; ?>,
-            level: <?php echo $livello_base_giocatore; ?>,
-            hp: <?php echo $hp_attuali_giocatore; ?>,
-            maxHp: <?php echo $hp_massimi_giocatore; ?>,
-            atk: <?php echo $pokemon_giocatore['ATK']; ?>,
-            def: <?php echo $pokemon_giocatore['DEF']; ?>,
-            spa: <?php echo $pokemon_giocatore['SP_ATK']; ?>,
-            spd: <?php echo $pokemon_giocatore['SP_DEF']; ?>,
-            spe: <?php echo $pokemon_giocatore['SPE']; ?>
-        };
+        // DATI DEI POKEMON (passati dal PHP)
+        const teamData = <?php echo json_encode($team_data); ?>;
+        
+        // Il Pokémon attuale deve essere preso da teamData per avere tutte le proprietà
+        let currentPokemon = teamData.find(p => p.slot == <?php echo $pokemon_attuale['slot']; ?>);
         
         const enemyPokemon = {
             name: '<?php echo strtoupper($pokemon_nemico['nome']); ?>',
@@ -346,20 +307,24 @@
             spe: <?php echo $pokemon_nemico['SPE']; ?>
         };
 
-        // DATI DELLA SQUADRA COMPLETA
-        const teamData = <?php echo json_encode($team_menu); ?>;
-
-        console.log('Player Pokémon:', playerPokemon);
-        console.log('Enemy Pokémon:', enemyPokemon);
-        console.log('Team Data:', teamData);
-
-        // Riferimenti ai menu
+        // Riferimenti agli elementi DOM
         const mainMenu = document.getElementById('mainMenu');
         const movesMenu = document.getElementById('movesMenu');
         const pokemonMenu = document.getElementById('pokemonMenu');
         const questionBox = document.getElementById('questionBox');
+        const currentPokemonNameSpan = document.getElementById('currentPokemonName');
+        
+        // Elementi del Pokémon in battaglia
+        const playerName = document.getElementById('playerName');
+        const playerLevel = document.getElementById('playerLevel');
+        const playerHpText = document.getElementById('playerHpText');
+        const playerHpBar = document.getElementById('playerHpBar');
+        
+        // Colonne mosse
+        const movesColumn1 = document.getElementById('movesColumn1');
+        const movesColumn2 = document.getElementById('movesColumn2');
 
-        // Riferimenti ai bottoni
+        // Bottoni
         const fightBtn = document.getElementById('fightBtn');
         const pokemonBtn = document.getElementById('pokemonBtn');
         const bagBtn = document.getElementById('bagBtn');
@@ -367,12 +332,78 @@
         const backFromMovesBtn = document.getElementById('backFromMovesBtn');
         const backFromPokemonBtn = document.getElementById('backFromPokemonBtn');
 
-        // Funzione per tornare al menu principale
+        // ============================================================
+        // FUNZIONE PER CAMBIARE POKEMON
+        // ============================================================
+        function switchPokemon(slot) {
+            // Trova il Pokémon selezionato nei teamData
+            const selectedPokemon = teamData.find(p => p.slot == slot);
+            
+            if (!selectedPokemon) {
+                console.error('Pokémon non trovato per slot:', slot);
+                return;
+            }
+            
+            // Non permettere di selezionare lo stesso Pokémon
+            if (selectedPokemon.slot == currentPokemon.slot) {
+                alert(currentPokemon.name + ' è già in battaglia!');
+                return;
+            }
+            
+            // Aggiorna il Pokémon corrente
+            currentPokemon = selectedPokemon;
+            
+            // Aggiorna le informazioni visualizzate
+            playerName.innerHTML = currentPokemon.name + '<span class="registered">®</span>';
+            playerLevel.textContent = 'Lv' + currentPokemon.level;
+            playerHpText.textContent = currentPokemon.hp + '/' + currentPokemon.max_hp;
+            
+            const hpPercentage = (currentPokemon.hp / currentPokemon.max_hp) * 100;
+            playerHpBar.style.width = hpPercentage + '%';
+            
+            // Aggiorna il nome nel question box
+            currentPokemonNameSpan.textContent = currentPokemon.name;
+            
+            // Aggiorna le mosse nel menu FIGHT
+            updateMovesForPokemon(currentPokemon.cod, currentPokemon.sec_form);
+            
+            // Aggiorna la classe selected nel menu Pokémon
+            document.querySelectorAll('.pokemon-button').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            document.getElementById('pokemonSlot' + slot).classList.add('selected');
+            
+            // Mostra messaggio di cambio
+            questionBox.innerHTML = 'GO!<br>' + currentPokemon.name + '!';
+            
+            // Torna al menu principale dopo 2 secondi
+            setTimeout(() => {
+                backToMainMenu();
+            }, 2000);
+            
+            console.log('Cambiato a:', currentPokemon.name);
+            console.log('HP:', currentPokemon.hp, '/', currentPokemon.max_hp);
+        }
+
+        // ============================================================
+        // FUNZIONE PER AGGIORNARE LE MOSSE
+        // ============================================================
+        function updateMovesForPokemon(cod, secForm) {
+            // Per ora manteniamo le mosse attuali
+            console.log('Caricamento mosse per Pokémon cod:', cod, 'secForm:', secForm);
+            
+            // In una implementazione reale, qui faresti una chiamata AJAX
+            // Per ora mostriamo solo un messaggio
+        }
+
+        // ============================================================
+        // FUNZIONE PER TORNARE AL MENU PRINCIPALE
+        // ============================================================
         function backToMainMenu() {
             mainMenu.classList.remove('hidden');
             movesMenu.classList.remove('active');
             pokemonMenu.classList.remove('active');
-            questionBox.innerHTML = 'WHAT WILL<br>' + playerPokemon.name + ' DO?';
+            questionBox.innerHTML = 'WHAT WILL<br>' + currentPokemon.name + ' DO?';
             
             document.querySelectorAll('.command-button, .move-button, .pokemon-button').forEach(btn => {
                 if(btn.id !== 'backFromMovesBtn' && btn.id !== 'backFromPokemonBtn') {
@@ -383,7 +414,62 @@
             fightBtn.classList.add('selected');
         }
 
-        // Mostra il menu delle mosse
+        // ============================================================
+        // FUNZIONE PER USARE UNA MOSSA
+        // ============================================================
+        function usaMossa(mossa) {
+            console.log('Mossa usata:', mossa);
+            console.log('Pokemon attuale:', currentPokemon);
+            console.log('Pokemon nemico:', enemyPokemon);
+            
+            questionBox.innerHTML = currentPokemon.name + '<br>USED ' + mossa.nome + '!';
+            
+            // Qui implementerai la logica di danno
+            setTimeout(() => {
+                backToMainMenu();
+            }, 2000);
+        }
+
+        // ============================================================
+        // FUNZIONE PER ATTACCARE GLI EVENT LISTENER ALLE MOSSE
+        // ============================================================
+        function attachMoveListeners() {
+            document.querySelectorAll('.move-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    if(this.id !== 'backFromMovesBtn') {
+                        document.querySelectorAll('.move-button').forEach(btn => {
+                            btn.classList.remove('selected');
+                        });
+                        this.classList.add('selected');
+                        
+                        const mossa = {
+                            nome: this.textContent.trim(),
+                            potenza: parseInt(this.dataset.power) || 0,
+                            tipo: this.dataset.type || 'normale',
+                            accuratezza: parseInt(this.dataset.accuracy) || 100
+                        };
+                        
+                        usaMossa(mossa);
+                    }
+                });
+            });
+        }
+
+        // ============================================================
+        // VERIFICA INIZIALE DEI DATI
+        // ============================================================
+        console.log('=== VERIFICA DATI INIZIALI ===');
+        console.log('Team Data:', teamData);
+        console.log('Current Pokemon:', currentPokemon);
+        console.log('HP currentPokemon:', currentPokemon.hp);
+        console.log('Max HP currentPokemon:', currentPokemon.max_hp);
+        console.log('==============================');
+
+        // ============================================================
+        // EVENT LISTENER
+        // ============================================================
+        
+        // FIGHT - mostra menu mosse
         fightBtn.addEventListener('click', function() {
             mainMenu.classList.add('hidden');
             movesMenu.classList.add('active');
@@ -402,7 +488,7 @@
             this.classList.add('selected');
         });
 
-        // Mostra il menu Pokémon
+        // POKEMON - mostra menu Pokémon
         pokemonBtn.addEventListener('click', function() {
             mainMenu.classList.add('hidden');
             pokemonMenu.classList.add('active');
@@ -413,16 +499,10 @@
                 btn.classList.remove('selected');
             });
             
-            // Seleziona il primo Pokémon
-            const firstPokemon = document.querySelector('.pokemon-button');
-            if(firstPokemon) {
-                firstPokemon.classList.add('selected');
-            }
-            
             this.classList.add('selected');
         });
 
-        // Gestione BAG
+        // BAG
         bagBtn.addEventListener('click', function() {
             document.querySelectorAll('.command-button').forEach(btn => {
                 btn.classList.remove('selected');
@@ -432,69 +512,57 @@
             setTimeout(backToMainMenu, 2000);
         });
 
-        // Gestione RUN
+        // RUN
         runBtn.addEventListener('click', function() {
             document.querySelectorAll('.command-button').forEach(btn => {
                 btn.classList.remove('selected');
             });
             this.classList.add('selected');
-            questionBox.innerHTML = 'CAN\'T ESCAPE!';
+            questionBox.innerHTML = "CAN'T ESCAPE!";
             setTimeout(backToMainMenu, 2000);
         });
 
-        // Torna indietro
+        // BACK dai menu
         backFromMovesBtn.addEventListener('click', backToMainMenu);
         backFromPokemonBtn.addEventListener('click', backToMainMenu);
 
-        fightBtn.classList.add('selected');
-
-        // Funzione per usare una mossa
-        function usaMossa(mossa) {
-            console.log('Mossa usata:', mossa);
-            alert('Hai usato ' + mossa.nome + '! (Danno: ' + mossa.potenza + ')');
-            // Qui implementerai la logica di combattimento
-        }
-
-        // Event listener per le mosse
-        document.querySelectorAll('.move-button').forEach(button => {
-            button.addEventListener('click', function() {
-                if(this.id !== 'backFromMovesBtn') {
-                    document.querySelectorAll('.move-button').forEach(btn => {
-                        btn.classList.remove('selected');
-                    });
-                    this.classList.add('selected');
-                    
-                    const mossa = {
-                        nome: this.textContent.trim(),
-                        potenza: parseInt(this.dataset.power) || 0,
-                        tipo: this.dataset.type || 'normale',
-                        accuratezza: parseInt(this.dataset.accuracy) || 100
-                    };
-                    
-                    usaMossa(mossa);
-                }
-            });
-        });
-
-        // Event listener per i Pokémon
+        // Event listener per i Pokémon nel menu di cambio
         document.querySelectorAll('.pokemon-button').forEach(button => {
             if(button.id !== 'backFromPokemonBtn') {
                 button.addEventListener('click', function() {
-                    document.querySelectorAll('.pokemon-button').forEach(btn => {
-                        if(btn.id !== 'backFromPokemonBtn') {
-                            btn.classList.remove('selected');
-                        }
-                    });
-                    this.classList.add('selected');
-                    
                     const slot = this.dataset.slot;
-                    const pokemonName = this.querySelector('span:first-child').textContent;
+                    const hp = this.dataset.hp;
+                    const maxhp = this.dataset.maxhp;
                     
-                    questionBox.innerHTML = 'GO!<br>' + pokemonName + '!';
+                    console.log('Bottone cliccato - Slot:', slot, 'HP:', hp, 'MaxHP:', maxhp);
                     
-                    console.log('Cambio con Pokémon slot:', slot);
+                    // Verifica che i dati siano presenti
+                    if (!hp || !maxhp) {
+                        console.error('Dati HP mancanti nel bottone!');
+                        console.log('Dataset completo:', this.dataset);
+                    }
                     
-                    setTimeout(backToMainMenu, 2000);
+                    switchPokemon(slot);
+                });
+            }
+        });
+
+        // Seleziona FIGHT di default
+        fightBtn.classList.add('selected');
+        
+        // Attacca listener alle mosse iniziali
+        attachMoveListeners();
+
+        // ============================================================
+        // DEBUG - Mostra tutti i data attributes dei bottoni Pokémon
+        // ============================================================
+        document.querySelectorAll('.pokemon-button').forEach(button => {
+            if(button.id !== 'backFromPokemonBtn') {
+                console.log('Pokemon button data:', {
+                    slot: button.dataset.slot,
+                    name: button.dataset.name,
+                    hp: button.dataset.hp,
+                    maxhp: button.dataset.maxhp
                 });
             }
         });
