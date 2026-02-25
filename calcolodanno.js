@@ -265,6 +265,20 @@ function debolezze(elemento,ele1,ele2){
     }
 }
 
+function debugTeamData() {
+    console.log('=== DEBUG TEAM DATA ===');
+    teamData.forEach(pokemon => {
+        console.log(`Slot ${pokemon.slot}: ${pokemon.name} (cod: ${pokemon.cod}, form: ${pokemon.sec_form})`);
+    });
+    console.log('=======================');
+}
+
+debugTeamData();
+
+function abilita(abilita){
+
+}
+
 function turni(valut,elemento,danno,accuratezza,effet){
     if(spe1 > spe2){
         turn = 1;
