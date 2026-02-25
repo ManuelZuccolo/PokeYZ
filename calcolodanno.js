@@ -16,20 +16,253 @@ let aggcrt2=0;
 let dannotot;
 let turn=1;
 
-function aggiornaBarraHP() {
-    let hpMassimo = 182; 
-    let percentuale = (hp2 / hpMassimo) * 100;
-    
-    document.getElementById('hpRight').style.width = percentuale + '%';
-    
-    document.getElementById('hpRightText').innerHTML = Math.floor(hp2) + '/' + hpMassimo;
-    
-    // Se vuoi aggiornare anche la barra di sinistra quando serve
-    aggiornaBarraHPSinistra();
-}
 
-function switchpokemon(){
-    
+function debolezze(elemento,ele1,ele2){
+    switch(elemento){
+        case "Fire" : 
+        if(ele1 == "Grass" || ele1 == "Steel" || ele1 == "Bug" || ele1 == "Ice")
+            dannotot *= 2;
+        else if(ele1=="Fire" || ele1 == "Water" || ele1 == "Dragon")
+            dannotot *= 0.5
+
+        if(ele2 == "Grass" || ele2 == "Steel" || ele2 == "Bug" || ele2 == "Ice")
+            dannotot *= 2;
+        else if(ele2=="Fire" || ele2 == "Water" || ele2 == "Dragon")
+            dannotot *= 0.5
+        break;
+
+        case "Normal" : 
+        if(ele1=="Rock" || ele1 == "Steel")
+            dannotot *= 0.5
+        else if(ele1 == "Gost")
+            dannotot = 0;
+
+        if(ele2=="Rock" || ele2 == "Steel")
+            dannotot *= 0.5
+        else if(ele2 == "Gost")
+            dannotot = 0;
+        break;
+
+        case "Fighting" : 
+        if(ele1 == "Normal" || ele1 == "Steel" || ele1 == "Dark" || ele1 == "Ice" || ele1=="Rock")
+            dannotot *= 2;
+        else if(ele1=="Flying" || ele1 == "Poison" || ele1 == "Bug" || ele1=="Psychic" || ele1=="Fairy")
+            dannotot *= 0.5
+        else if(ele1 == "Gost")
+            dannotot = 0;
+
+        if(ele2 == "Normal" || ele2 == "Steel" || ele2 == "Dark" || ele2 == "Ice" || ele2=="Rock")
+            dannotot *= 2;
+        else if(ele2=="Flying" || ele2 == "Poison" || ele2 == "Bug" || ele2=="Psychic" || ele2=="Fairy")
+            dannotot *= 0.5
+        else if(ele2 == "Gost")
+            dannotot = 0;
+        break;
+
+        case "Flying" : 
+        if(ele1 == "Fighting" || ele1 == "Bug" || ele1 == "Bug" || ele1 == "Grass")
+            dannotot *= 2;
+        else if(ele1=="Rock" || ele1 == "Steel" || ele1 == "Electric")
+            dannotot *= 0.5
+
+        if(ele2 == "Fighting" || ele2 == "Bug" || ele2 == "Bug" || ele2 == "Grass")
+            dannotot *= 2;
+        else if(ele2=="Rock" || ele2 == "Steel" || ele2 == "Electric")
+            dannotot *= 0.5
+        break;
+
+        case "Poison" : 
+        if(ele1 == "Grass" || ele1 == "Fairy")
+            dannotot *= 2;
+        else if(ele1=="Rock" || ele1 == "Poison" || ele1 == "Ground" || ele1=="Gost")
+            dannotot *= 0.5
+        else if(ele1 == "steel")
+            dannotot = 0;
+
+        if(ele2 == "Grass" || ele2 == "Fairy")
+            dannotot *= 2;
+        else if(ele2=="Rock" || ele2 == "Poison" || ele2 == "Ground" || ele2=="Gost")
+            dannotot *= 0.5
+        else if(ele2 == "steel")
+            dannotot = 0;
+        break;
+
+        case "Ground" : 
+        if(ele1 == "Electric" || ele1 == "Steel" || ele1 == "Fire" || ele1=="Poison" || ele1=="Rock")
+            dannotot *= 2;
+        else if(ele1=="Bug" || ele1 == "Grass")
+            dannotot *= 0.5
+        else if(ele1 == "Flying")
+            dannotot = 0;
+
+        if(ele2 == "Electric" || ele2 == "Steel" || ele2 == "Fire" || ele2=="Poison" || ele2=="Rock")
+            dannotot *= 2;
+        else if(ele2=="Bug" || ele2 == "Grass")
+            dannotot *= 0.5
+        else if(ele2 == "Flying")
+            dannotot = 0;
+        break;
+
+        case "Water":
+        if(ele1 == "Fire" || ele1 == "Ground" || ele1 == "Rock")
+            dannotot *= 2;
+        else if(ele1 == "Water" || ele1 == "Grass" || ele1 == "Dragon")
+            dannotot *= 0.5;
+            
+        if(ele2 == "Fire" || ele2 == "Ground" || ele2 == "Rock")
+            dannotot *= 2;
+        else if(ele2 == "Water" || ele2 == "Grass" || ele2 == "Dragon")
+            dannotot *= 0.5;
+        break;
+
+        case "Electric":
+        if(ele1 == "Water" || ele1 == "Flying")
+            dannotot *= 2;
+        else if(ele1 == "Electric" || ele1 == "Grass" || ele1 == "Dragon")
+            dannotot *= 0.5;
+        else if(ele1 == "Ground")
+            dannotot = 0;
+            
+        if(ele2 == "Water" || ele2 == "Flying")
+            dannotot *= 2;
+        else if(ele2 == "Electric" || ele2 == "Grass" || ele2 == "Dragon")
+            dannotot *= 0.5;
+        else if(ele2 == "Ground")
+            dannotot = 0;
+        break;
+
+         case "Grass":
+        if(ele1 == "Water" || ele1 == "Ground" || ele1 == "Rock")
+            dannotot *= 2;
+        else if(ele1 == "Fire" || ele1 == "Grass" || ele1 == "Poison" || ele1 == "Flying" || ele1 == "Bug" || ele1 == "Dragon" || ele1 == "Steel")
+            dannotot *= 0.5;
+            
+        if(ele2 == "Water" || ele2 == "Ground" || ele2 == "Rock")
+            dannotot *= 2;
+        else if(ele2 == "Fire" || ele2 == "Grass" || ele2 == "Poison" || ele2 == "Flying" || ele2 == "Bug" || ele2 == "Dragon" || ele2 == "Steel")
+            dannotot *= 0.5;
+        break;
+
+        case "Ice":
+        if(ele1 == "Grass" || ele1 == "Ground" || ele1 == "Flying" || ele1 == "Dragon")
+            dannotot *= 2;
+        else if(ele1 == "Fire" || ele1 == "Water" || ele1 == "Ice" || ele1 == "Steel")
+            dannotot *= 0.5;
+            
+        if(ele2 == "Grass" || ele2 == "Ground" || ele2 == "Flying" || ele2 == "Dragon")
+            dannotot *= 2;
+        else if(ele2 == "Fire" || ele2 == "Water" || ele2 == "Ice" || ele2 == "Steel")
+            dannotot *= 0.5;
+        break;
+
+        case "Psychic":
+        if(ele1 == "Fighting" || ele1 == "Poison")
+            dannotot *= 2;
+        else if(ele1 == "Psychic" || ele1 == "Steel")
+            dannotot *= 0.5;
+        else if(ele1 == "Dark")
+            dannotot = 0;
+            
+        if(ele2 == "Fighting" || ele2 == "Poison")
+            dannotot *= 2;
+        else if(ele2 == "Psychic" || ele2 == "Steel")
+            dannotot *= 0.5;
+        else if(ele2 == "Dark")
+            dannotot = 0;
+        break;
+
+         case "Bug":
+        if(ele1 == "Grass" || ele1 == "Psychic" || ele1 == "Dark")
+            dannotot *= 2;
+        else if(ele1 == "Fire" || ele1 == "Fighting" || ele1 == "Poison" || ele1 == "Flying" || ele1 == "Ghost" || ele1 == "Steel" || ele1 == "Fairy")
+            dannotot *= 0.5;
+            
+        if(ele2 == "Grass" || ele2 == "Psychic" || ele2 == "Dark")
+            dannotot *= 2;
+        else if(ele2 == "Fire" || ele2 == "Fighting" || ele2 == "Poison" || ele2 == "Flying" || ele2 == "Ghost" || ele2 == "Steel" || ele2 == "Fairy")
+            dannotot *= 0.5;
+        break;
+        
+        case "Rock":
+        if(ele1 == "Fire" || ele1 == "Ice" || ele1 == "Flying" || ele1 == "Bug")
+            dannotot *= 2;
+        else if(ele1 == "Fighting" || ele1 == "Ground" || ele1 == "Steel")
+            dannotot *= 0.5;
+            
+        if(ele2 == "Fire" || ele2 == "Ice" || ele2 == "Flying" || ele2 == "Bug")
+            dannotot *= 2;
+        else if(ele2 == "Fighting" || ele2 == "Ground" || ele2 == "Steel")
+            dannotot *= 0.5;
+        break;
+        
+        case "Ghost":
+        if(ele1 == "Psychic" || ele1 == "Ghost")
+            dannotot *= 2;
+        else if(ele1 == "Dark")
+            dannotot *= 0.5;
+        else if(ele1 == "Normal")
+            dannotot = 0;
+            
+        if(ele2 == "Psychic" || ele2 == "Ghost")
+            dannotot *= 2;
+        else if(ele2 == "Dark")
+            dannotot *= 0.5;
+        else if(ele2 == "Normal")
+            dannotot = 0;
+        break;
+        
+        case "Dragon":
+        if(ele1 == "Dragon")
+            dannotot *= 2;
+        else if(ele1 == "Steel")
+            dannotot *= 0.5;
+        else if(ele1 == "Fairy")
+            dannotot = 0;
+            
+        if(ele2 == "Dragon")
+            dannotot *= 2;
+        else if(ele2 == "Steel")
+            dannotot *= 0.5;
+        else if(ele2 == "Fairy")
+            dannotot = 0;
+        break;
+        
+        case "Dark":
+        if(ele1 == "Psychic" || ele1 == "Ghost")
+            dannotot *= 2;
+        else if(ele1 == "Fighting" || ele1 == "Dark" || ele1 == "Fairy")
+            dannotot *= 0.5;
+            
+        if(ele2 == "Psychic" || ele2 == "Ghost")
+            dannotot *= 2;
+        else if(ele2 == "Fighting" || ele2 == "Dark" || ele2 == "Fairy")
+            dannotot *= 0.5;
+        break;
+        
+        case "Steel":
+        if(ele1 == "Ice" || ele1 == "Rock" || ele1 == "Fairy")
+            dannotot *= 2;
+        else if(ele1 == "Fire" || ele1 == "Water" || ele1 == "Electric" || ele1 == "Steel")
+            dannotot *= 0.5;
+            
+        if(ele2 == "Ice" || ele2 == "Rock" || ele2 == "Fairy")
+            dannotot *= 2;
+        else if(ele2 == "Fire" || ele2 == "Water" || ele2 == "Electric" || ele2 == "Steel")
+            dannotot *= 0.5;
+        break;
+        
+        case "Fairy":
+        if(ele1 == "Fighting" || ele1 == "Dragon" || ele1 == "Dark")
+            dannotot *= 2;
+        else if(ele1 == "Fire" || ele1 == "Poison" || ele1 == "Steel")
+            dannotot *= 0.5;
+            
+        if(ele2 == "Fighting" || ele2 == "Dragon" || ele2 == "Dark")
+            dannotot *= 2;
+        else if(ele2 == "Fire" || ele2 == "Poison" || ele2 == "Steel")
+            dannotot *= 0.5;
+        break;
+    }
 }
 
 function turni(valut,elemento,danno,accuratezza,effet){
