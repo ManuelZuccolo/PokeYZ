@@ -142,7 +142,13 @@ endfor;
 ?>
 </table>
 
-<a href="index.php" class="main-btn" style="margin-top:20px;">Torna all'homepage</a>
-</div></div>
-</body>
+<div style="margin-top: 30px; display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+    <a href="index.php" class="main-btn" style="text-decoration: none;">Torna all'homepage</a>
+    
+    <a href="combatti.php" class="main-btn" style="text-decoration: none; background-color: #ff0000; color: white; border-color: black;">
+        Combatti
+    </a>
+</div>
+
+</div></div> </body>
 </html>

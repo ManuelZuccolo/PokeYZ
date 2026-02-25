@@ -315,3 +315,7 @@ body.index-page {
     /* Impedisce alle parole troppo lunghe di spingere i bordi */
     word-break: break-word; 
 }
+.auth-card .main-btn {
+    min-width: 180px;
+    text-align: center;
+}
