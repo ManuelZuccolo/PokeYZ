@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Creato il: Feb 25, 2026 alle 19:09
+-- Creato il: Feb 25, 2026 alle 21:37
 -- Versione del server: 10.4.32-MariaDB
 -- Versione PHP: 8.0.30
 
@@ -400,18 +400,167 @@ CREATE TABLE `battaglia` (
 -- --------------------------------------------------------
 
 --
+-- Struttura della tabella `effetto`
+--
+
+CREATE TABLE `effetto` (
+  `id_effetto` int(11) NOT NULL,
+  `nome` varchar(20) NOT NULL,
+  `bersaglio` varchar(30) DEFAULT NULL,
+  `durata` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dump dei dati per la tabella `effetto`
+--
+
+INSERT INTO `effetto` (`id_effetto`, `nome`, `bersaglio`, `durata`) VALUES
+(1, 'burn', 'opponent', NULL),
+(2, 'regular_poison', 'opponent', NULL),
+(3, 'badly_poison', 'opponent', NULL),
+(4, 'paralysis', 'opponent', NULL),
+(5, 'sleep', 'opponent', 4),
+(6, 'frozen', 'opponent', NULL),
+(7, 'confusion', 'opponent', 4),
+(8, 'flinch', 'opponent', 1),
+(9, 'infatuation', 'opponent', NULL),
+(10, 'curse', 'opponent', NULL),
+(11, 'nightmare', 'opponent', NULL),
+(12, 'leech_seed', 'opponent', NULL),
+(13, 'torment', 'opponent', NULL),
+(14, 'taunt', 'opponent', 3),
+(15, 'disable', 'opponent', 4),
+(16, 'encore', 'opponent', 3),
+(17, 'heal_block', 'opponent', 5),
+(18, '+1ATK', 'self', NULL),
+(19, '+1DEF', 'self', NULL),
+(20, '+1SP_ATK', 'self', NULL),
+(21, '+1SP_DEF', 'self', NULL),
+(22, '+1SPE', 'self', NULL),
+(23, '+1ACC', 'self', NULL),
+(24, '+1EVA', 'self', NULL),
+(25, '+2ATK', 'self', NULL),
+(26, '+2DEF', 'self', NULL),
+(27, '+2SP_ATK', 'self', NULL),
+(28, '+2SP_DEF', 'self', NULL),
+(29, '+2SPE', 'self', NULL),
+(30, '+2ACC', 'self', NULL),
+(31, '+2EVA', 'self', NULL),
+(32, '+3ATK', 'self', NULL),
+(33, 'crit_rate_up_1', 'self', NULL),
+(34, 'crit_rate_up_2', 'self', NULL),
+(35, '-1ATK', 'opponent', NULL),
+(36, '-1DEF', 'opponent', NULL),
+(37, '-1SP_ATK', 'opponent', NULL),
+(38, '-1SP_DEF', 'opponent', NULL),
+(39, '-1SPE', 'opponent', NULL),
+(40, '-1ACC', 'opponent', NULL),
+(41, '-1EVA', 'opponent', NULL),
+(42, '-2ATK', 'opponent', NULL),
+(43, '-2DEF', 'opponent', NULL),
+(44, '-2SP_ATK', 'opponent', NULL),
+(45, '-2SP_DEF', 'opponent', NULL),
+(46, '-2SPE', 'opponent', NULL),
+(47, 'multihit_2-5', NULL, NULL),
+(48, 'multihit_2', NULL, NULL),
+(49, 'multihit_3', NULL, NULL),
+(50, 'multihit_5', NULL, NULL),
+(51, 'heal_50', 'self', NULL),
+(52, 'heal_75', 'self', NULL),
+(53, 'heal_100', 'self', NULL),
+(54, 'recoil_25', 'self', NULL),
+(55, 'recoil_33', 'self', NULL),
+(56, 'recoil_50', 'self', NULL),
+(57, 'instakill', 'opponent', NULL),
+(58, 'gone', 'self', 1),
+(59, 'underground', 'self', 1),
+(60, 'underwater', 'self', 1),
+(61, 'airborne', 'self', 1),
+(62, 'delay', 'self', 1),
+(63, 'recharge', 'self', 1),
+(64, 'switch_forced', 'opponent', NULL),
+(65, 'switch_self', 'self', NULL),
+(66, 'block', 'self', 1),
+(67, 'endure', 'self', 1),
+(68, 'bide', 'self', 2),
+(69, 'focus_energy', 'self', NULL),
+(70, 'lock_on', 'self', NULL),
+(71, 'pursuit', 'opponent', NULL),
+(72, 'thrash', 'self', 3),
+(73, 'substitute', 'self', NULL),
+(74, 'transform', 'self', NULL),
+(75, 'minimize', 'self', NULL),
+(76, 'teleport', 'self', NULL),
+(77, 'roost', 'self', 1),
+(78, 'spikes', 'field', NULL),
+(79, 'toxic_spikes', 'field', NULL),
+(80, 'stealth_rock', 'field', NULL),
+(81, 'sticky_web', 'field', NULL),
+(82, 'rain', 'field', 5),
+(83, 'sun', 'field', 5),
+(84, 'sandstorm', 'field', 5),
+(85, 'hail', 'field', 5),
+(86, 'fog', 'field', 5),
+(87, 'heavy_rain', 'field', 5),
+(88, 'harsh_sun', 'field', 5),
+(89, 'strong_winds', 'field', 5),
+(90, 'electric_terrain', 'field', 5),
+(91, 'grassy_terrain', 'field', 5),
+(92, 'misty_terrain', 'field', 5),
+(93, 'psychic_terrain', 'field', 5),
+(94, 'magnitude', NULL, NULL),
+(95, 'gyro_ball', NULL, NULL),
+(96, 'rollout', 'self', 5),
+(97, 'uproar', 'self', 3),
+(98, 'stockpile_1', 'self', NULL),
+(99, 'stockpile_2', 'self', NULL),
+(100, 'stockpile_3', 'self', NULL),
+(101, 'swallow', 'self', NULL),
+(102, 'spit_up', 'opponent', NULL);
+
+-- --------------------------------------------------------
+
+--
 -- Struttura della tabella `effetto_mossa`
 --
 
 CREATE TABLE `effetto_mossa` (
   `id_effetto` int(11) NOT NULL,
   `id_mossa` int(11) NOT NULL,
-  `tipo_effetto` varchar(30) DEFAULT NULL,
-  `valore_effetto` int(11) DEFAULT NULL,
-  `bersaglio` varchar(30) DEFAULT NULL,
-  `probabilita` int(11) DEFAULT NULL,
-  `durata` int(11) DEFAULT NULL
+  `probabilita` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dump dei dati per la tabella `effetto_mossa`
+--
+
+INSERT INTO `effetto_mossa` (`id_effetto`, `id_mossa`, `probabilita`) VALUES
+(1, 53, 10),
+(1, 261, NULL),
+(2, 188, 30),
+(3, 92, NULL),
+(5, 95, NULL),
+(6, 8, 10),
+(6, 58, 10),
+(7, 200, 100),
+(8, 127, 20),
+(8, 326, 10),
+(18, 318, 10),
+(18, 339, NULL),
+(19, 318, 10),
+(19, 339, NULL),
+(20, 318, 10),
+(21, 318, 10),
+(22, 318, 10),
+(25, 14, NULL),
+(36, 242, 20),
+(38, 94, 10),
+(38, 247, 20),
+(40, 330, 30),
+(57, 12, NULL),
+(59, 89, NULL),
+(72, 200, NULL),
+(73, 164, NULL);
 
 -- --------------------------------------------------------
 
@@ -2241,10 +2390,16 @@ ALTER TABLE `battaglia`
   ADD KEY `id_player2` (`id_player2`);
 
 --
+-- Indici per le tabelle `effetto`
+--
+ALTER TABLE `effetto`
+  ADD PRIMARY KEY (`id_effetto`);
+
+--
 -- Indici per le tabelle `effetto_mossa`
 --
 ALTER TABLE `effetto_mossa`
-  ADD PRIMARY KEY (`id_effetto`),
+  ADD PRIMARY KEY (`id_effetto`,`id_mossa`),
   ADD KEY `id_mossa` (`id_mossa`);
 
 --
@@ -2360,7 +2515,8 @@ ALTER TABLE `battaglia`
 -- Limiti per la tabella `effetto_mossa`
 --
 ALTER TABLE `effetto_mossa`
-  ADD CONSTRAINT `effetto_mossa_ibfk_1` FOREIGN KEY (`id_mossa`) REFERENCES `mossa` (`id_mossa`);
+  ADD CONSTRAINT `effetto_mossa_ibfk_1` FOREIGN KEY (`id_effetto`) REFERENCES `effetto` (`id_effetto`),
+  ADD CONSTRAINT `effetto_mossa_ibfk_2` FOREIGN KEY (`id_mossa`) REFERENCES `mossa` (`id_mossa`);
 
 --
 -- Limiti per la tabella `mossa`
