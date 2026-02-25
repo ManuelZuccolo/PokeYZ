@@ -234,6 +234,8 @@ body.index-page {
     display: flex;
     justify-content: center;
     align-items: center;
+    padding: 20px; /* Spazio di sicurezza ai bordi dello schermo */
+    width: 100%;
 }
 
 /* CARD */
@@ -241,9 +243,14 @@ body.index-page {
     background: white;
     padding: 40px;
     border-radius: 18px;
-    width: 600px;
-    text-align: center;
     box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    text-align: center;
+    
+    /* MODIFICHE CHIAVE */
+    width: fit-content;      /* Si stringe intorno al contenuto */
+    min-width: 600px;       /* Non diventa più piccola del login originale */
+    max-width: 95vw;        /* Non esce mai dallo schermo (95% della larghezza vista) */
+    margin: auto;
 }
 
 .btn-wrapper {
@@ -300,3 +307,11 @@ body.index-page {
     font-size: 0.9em;
 }
 
+.pokedex-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+    margin: 20px 0;
+    /* Impedisce alle parole troppo lunghe di spingere i bordi */
+    word-break: break-word; 
+}
