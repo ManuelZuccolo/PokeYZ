@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Creato il: Feb 25, 2026 alle 16:54
+-- Creato il: Feb 25, 2026 alle 19:09
 -- Versione del server: 10.4.32-MariaDB
 -- Versione PHP: 8.0.30
 
@@ -370,12 +370,17 @@ INSERT INTO `abilita_pokemon` (`cod`, `sec_form`, `id_abilita`, `segreta`) VALUE
 (6, 'BASE', 1, 0),
 (94, 'BASE', 131, 0),
 (149, 'BASE', 2, 1),
+(260, 'MEGA', 35, 0),
 (350, 'BASE', 65, 0),
+(384, 'MEGA', 191, 0),
 (407, 'BASE', 32, 0),
 (423, 'BASE', 62, 0),
 (442, 'BASE', 48, 0),
 (445, 'BASE', 10, 0),
 (448, 'BASE', 81, 0),
+(475, 'BASE', 154, 1),
+(612, 'BASE', 105, 0),
+(612, 'BASE', 128, 1),
 (644, 'BASE', 164, 0);
 
 -- --------------------------------------------------------
@@ -1296,23 +1301,30 @@ CREATE TABLE `mossa_x_pokemon` (
 --
 
 INSERT INTO `mossa_x_pokemon` (`id_mossa`, `cod`, `sec_form`) VALUES
+(8, 260, 'MEGA'),
+(12, 612, 'BASE'),
+(14, 475, 'BASE'),
 (53, 6, 'BASE'),
 (53, 445, 'BASE'),
 (57, 350, 'BASE'),
 (58, 350, 'BASE'),
 (58, 423, 'BASE'),
+(89, 260, 'MEGA'),
 (89, 423, 'BASE'),
 (89, 445, 'BASE'),
 (92, 407, 'BASE'),
 (94, 442, 'BASE'),
 (95, 94, 'BASE'),
+(127, 260, 'MEGA'),
 (164, 94, 'BASE'),
 (164, 644, 'BASE'),
 (188, 407, 'BASE'),
 (188, 423, 'BASE'),
 (195, 94, 'BASE'),
 (200, 149, 'BASE'),
+(200, 612, 'BASE'),
 (200, 644, 'BASE'),
+(242, 612, 'BASE'),
 (243, 350, 'BASE'),
 (245, 448, 'BASE'),
 (247, 94, 'BASE'),
@@ -1323,19 +1335,25 @@ INSERT INTO `mossa_x_pokemon` (`id_mossa`, `cod`, `sec_form`) VALUES
 (330, 423, 'BASE'),
 (337, 6, 'BASE'),
 (337, 644, 'BASE'),
+(339, 475, 'BASE'),
+(349, 612, 'BASE'),
 (349, 644, 'BASE'),
 (392, 350, 'BASE'),
 (396, 448, 'BASE'),
 (399, 442, 'BASE'),
 (406, 448, 'BASE'),
 (407, 445, 'BASE'),
+(409, 475, 'BASE'),
 (412, 407, 'BASE'),
 (416, 445, 'BASE'),
+(416, 612, 'BASE'),
+(427, 475, 'BASE'),
 (432, 448, 'BASE'),
 (444, 644, 'BASE'),
 (471, 94, 'BASE'),
 (550, 644, 'BASE'),
-(559, 644, 'BASE');
+(559, 644, 'BASE'),
+(612, 260, 'MEGA');
 
 -- --------------------------------------------------------
 
@@ -1627,6 +1645,7 @@ INSERT INTO `pokemon` (`cod`, `sec_form`, `nome`, `tipo1`, `tipo2`, `regione`, `
 (258, 'BASE', 'mudkip', 'water', NULL, 3, 'monster', 'water1', 'normale', 1, 50, 70, 50, 50, 50, 40),
 (259, 'BASE', 'marshtomp', 'water', 'ground', 3, 'monster', 'water1', 'normale', 1, 70, 85, 70, 60, 70, 50),
 (260, 'BASE', 'swampert', 'water', 'ground', 3, 'monster', 'water1', 'normale', 1, 100, 110, 90, 85, 90, 60),
+(260, 'MEGA', 'mega-swampert', 'water', 'ground', 3, 'monster', 'water1', 'mega', 1, 100, 150, 110, 95, 110, 70),
 (261, 'BASE', 'poochyena', 'dark', NULL, 3, 'field', NULL, 'normale', 1, 35, 55, 35, 30, 30, 35),
 (262, 'BASE', 'mightyena', 'dark', NULL, 3, 'field', NULL, 'normale', 1, 70, 90, 70, 60, 60, 70),
 (263, 'BASE', 'zigzagoon', 'normal', NULL, 3, 'field', NULL, 'normale', 1, 38, 30, 41, 30, 41, 60),
@@ -1751,6 +1770,7 @@ INSERT INTO `pokemon` (`cod`, `sec_form`, `nome`, `tipo1`, `tipo2`, `regione`, `
 (382, 'BASE', 'kyogre', 'water', NULL, 3, 'undiscovered', NULL, 'leggendario', 1, 100, 100, 90, 150, 140, 90),
 (383, 'BASE', 'groudon', 'ground', NULL, 3, 'undiscovered', NULL, 'leggendario', 1, 100, 150, 140, 100, 90, 90),
 (384, 'BASE', 'rayquaza', 'dragon', 'flying', 3, 'undiscovered', NULL, 'leggendario', 1, 105, 150, 90, 150, 90, 95),
+(384, 'MEGA', 'mega-rayquaza', 'dragon', 'flying', 3, 'undiscovered', NULL, 'mega', 1, 105, 180, 100, 180, 100, 115),
 (385, 'BASE', 'jirachi', 'steel', 'psychic', 3, 'undiscovered', NULL, 'mitico', 1, 100, 100, 100, 100, 100, 100),
 (386, 'BASE', 'deoxys', 'psychic', NULL, 3, 'undiscovered', NULL, 'mitico', 1, 50, 150, 50, 150, 50, 150),
 (387, 'BASE', 'turtwig', 'grass', NULL, 4, 'monster', 'grass', 'normale', 1, 55, 68, 64, 45, 55, 31),
@@ -1858,10 +1878,10 @@ INSERT INTO `pokemon` (`cod`, `sec_form`, `nome`, `tipo1`, `tipo2`, `regione`, `
 (489, 'BASE', 'phione', 'water', NULL, 4, 'water1', 'fairy', 'mitico', 1, 80, 80, 80, 80, 80, 80),
 (490, 'BASE', 'manaphy', 'water', NULL, 4, 'water1', 'fairy', 'mitico', 1, 100, 100, 100, 100, 100, 100),
 (491, 'BASE', 'darkrai', 'dark', NULL, 4, 'undiscovered', NULL, 'mitico', 1, 70, 90, 90, 135, 90, 125),
-(492, 'BASE', 'shaymin', 'grass', NULL, 4, 'undiscovered', NULL, 'mitico', 1, 100, 100, 100, 100, 100, 100),
-(493, 'BASE', 'arceus', 'normal', NULL, 4, 'undiscovered', NULL, 'mitico', 1, 120, 120, 120, 120, 120, 120),
-(494, 'BASE', 'victini', 'psychic', 'fire', 5, 'undiscovered', NULL, 'mitico', 1, 100, 100, 100, 100, 100, 100);
+(492, 'BASE', 'shaymin', 'grass', NULL, 4, 'undiscovered', NULL, 'mitico', 1, 100, 100, 100, 100, 100, 100);
 INSERT INTO `pokemon` (`cod`, `sec_form`, `nome`, `tipo1`, `tipo2`, `regione`, `uovo1`, `uovo2`, `grado`, `originale`, `HP`, `ATK`, `DEF`, `SP_ATK`, `SP_DEF`, `SPE`) VALUES
+(493, 'BASE', 'arceus', 'normal', NULL, 4, 'undiscovered', NULL, 'mitico', 1, 120, 120, 120, 120, 120, 120),
+(494, 'BASE', 'victini', 'psychic', 'fire', 5, 'undiscovered', NULL, 'mitico', 1, 100, 100, 100, 100, 100, 100),
 (495, 'BASE', 'snivy', 'grass', NULL, 5, 'field', 'grass', 'normale', 1, 45, 45, 55, 45, 55, 63),
 (496, 'BASE', 'servine', 'grass', NULL, 5, 'field', 'grass', 'normale', 1, 60, 60, 75, 60, 75, 83),
 (497, 'BASE', 'serperior', 'grass', NULL, 5, 'field', 'grass', 'normale', 1, 75, 75, 95, 75, 95, 113),
@@ -2121,10 +2141,11 @@ INSERT INTO `squadra_pokemon` (`id_squadra`, `slot`, `cod`, `sec_form`, `mossa1`
 (8, 1, 6, 'BASE', 53, 337, NULL, NULL, 1),
 (9, 1, 6, 'BASE', 53, 337, NULL, NULL, 1),
 (9, 2, 94, 'BASE', 95, 164, 195, 247, 131),
-(10, 1, 445, 'BASE', 53, 89, 407, 416, 10),
-(10, 2, 448, 'BASE', 245, 396, 406, 432, 81),
-(10, 3, 644, 'BASE', 200, 349, 444, 559, 164),
+(10, 1, 260, 'MEGA', 8, 89, 127, 612, 35),
+(10, 2, 612, 'BASE', 200, 242, 349, 416, 105),
+(10, 3, 644, 'BASE', 337, 349, 444, 559, 164),
 (10, 4, 6, 'BASE', 53, 337, NULL, NULL, 1),
+(10, 5, 475, 'BASE', 14, 339, 409, 427, 154),
 (11, 1, 94, 'BASE', 95, 164, 195, 247, 131),
 (12, 1, 442, 'BASE', 94, 247, 318, 399, 48),
 (12, 2, 407, 'BASE', 92, 326, 412, 188, 32),
