@@ -1,24 +1,6 @@
-//charmeleon
-let hp1 = 134;
-let atk1 = 84;
-let def1 = 78;
-let spa1 = 132;
-let spd1 = 85;
-let spe1 = 145;
-let element1a="fuoco";
-let element2a;
 let accuratezza1 = 0;
 let effeto1;
 let protetto1 = false;
-//mewtwo
-let hp2 = 182;
-let atk2 = 117;
-let def2 = 110;
-let spa2 = 206;
-let spd2 = 110;
-let spe2 = 200;
-let element1b="psyco";
-let element2b;
 let accuratezza2 = 0;
 let effeto2;
 let protetto2 = false;
