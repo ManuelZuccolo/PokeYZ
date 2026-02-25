@@ -49,15 +49,19 @@ $scegli = isset($_GET['scegli']);
 <h3>Seleziona un allenatore:</h3>
 
 <?php
-// ⚠️ CONTROLLA I NOMI DELLA TUA TABELLA
+// Prende tutti gli utenti che sono allenatori (tranne quello loggato)
 $query = "SELECT codice, nome
           FROM utente 
-          WHERE password = 'allenatore'";
+          WHERE password = 'allenatore' AND codice != " . $_SESSION['user_id'];
 
 $res = $conn->query($query);
 
 if(!$res){
     die("Errore query: ".$conn->error);
+}
+
+if($res->num_rows == 0) {
+    echo "<p>Nessun allenatore disponibile</p>";
 }
 
 while($row = $res->fetch_assoc()):

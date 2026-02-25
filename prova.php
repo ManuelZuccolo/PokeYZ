@@ -1,3 +1,17 @@
+<?php
+session_start();
+
+// Verifica che l'utente sia loggato
+if(!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit;
+}
+
+$id_giocatore = $_SESSION['user_id']; // ID dell'utente loggato
+$id_avversario = isset($_GET['id_avversario']) ? intval($_GET['id_avversario']) : 0;
+$modalita = isset($_GET['modalita']) ? $_GET['modalita'] : '';
+?>
+
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -25,18 +39,17 @@
     }
 
     // ============================================================
-    // RECUPERO DATI DALLA TABELLA SQUADRA
+    // FUNZIONE PER OTTENERE IL POKEMON IN BASE ALL'ID UTENTE
     // ============================================================
-    
-    // Recupero l'id_squadra per l'utente 7
-    $sql_squadra = "SELECT id_squadra FROM squadra WHERE codice_utente = 11";
-    $result_squadra = $conn->query($sql_squadra);
-    
-    if ($result_squadra === false) {
-        die("Errore nella query squadra: " . $conn->error);
-    }
-    
-    if ($result_squadra->num_rows > 0) {
+    function getSquadraByUtente($conn, $id_utente) {
+        // Recupero l'id_squadra per l'utente
+        $sql_squadra = "SELECT id_squadra FROM squadra WHERE codice_utente = $id_utente";
+        $result_squadra = $conn->query($sql_squadra);
+        
+        if ($result_squadra === false || $result_squadra->num_rows == 0) {
+            return null;
+        }
+        
         $row_squadra = $result_squadra->fetch_assoc();
         $id_squadra = $row_squadra['id_squadra'];
         
@@ -50,7 +63,7 @@
         $result_pokemon_squadra = $conn->query($sql_pokemon_squadra);
         
         if ($result_pokemon_squadra === false) {
-            die("Errore nella query pokemon squadra: " . $conn->error);
+            return null;
         }
         
         $team_pokemon = [];
@@ -58,56 +71,85 @@
             $team_pokemon[] = $row;
         }
         
-        if (empty($team_pokemon)) {
-            die("Nessun Pokémon trovato nella squadra con ID $id_squadra");
-        }
-    } else {
-        die("Nessuna squadra trovata per l'utente 7");
+        return $team_pokemon;
     }
 
     // ============================================================
-    // RECUPERO IL POKEMON NEMICO (Mewtwo)
+    // FUNZIONE PER CALCOLARE LE STATISTICHE AL LIVELLO
     // ============================================================
-    
-    $sql_nemico = "SELECT * FROM pokemon WHERE cod = 150 AND sec_form = 'BASE'";
-    $result_nemico = $conn->query($sql_nemico);
-    
-    if ($result_nemico === false) {
-        die("Errore nella query nemico: " . $conn->error);
-    }
-    
-    if ($result_nemico->num_rows > 0) {
-        $pokemon_nemico = $result_nemico->fetch_assoc();
-    } else {
-        die("Mewtwo non trovato nel database");
-    }
-
-    // ============================================================
-    // IMPOSTAZIONE LIVELLI E HP
-    // ============================================================
-    
-    $livello_base_giocatore = 50;
-    
-    // Prepara i dati di tutti i Pokémon della squadra
-    $team_data = [];
-    foreach($team_pokemon as $pokemon) {
-        $hp_base = (int) ($pokemon['HP'] * 2 + 31)*50/100+50+10;
-        $hp_massimi =(int) $hp_base;
-        
-        $team_data[] = [
+    function calcolaStatistiche($pokemon, $livello) {
+        return [
             'cod' => $pokemon['cod'],
             'name' => strtoupper($pokemon['nome']),
-            'level' => $livello_base_giocatore,
-            'hp' => $hp_massimi, // Inizia con HP pieni
-            'max_hp' => $hp_massimi,
-            'atk' => (int) ($pokemon['ATK'] * 2 + 31)*50/100+50+10,
-            'def' => (int) ($pokemon['DEF'] * 2 + 31)*50/100+50+10,
-            'spa' => (int) ($pokemon['SP_ATK'] * 2 + 31)*50/100+50+10,
-            'spd' => (int) ($pokemon['SP_DEF'] * 2 + 31)*50/100+50+10,
-            'spe' => (int) ($pokemon['SPE'] * 2 + 31)*50/100+50+10,
+            'level' => $livello,
+            'hp' => (int) ($pokemon['HP'] * 2 + 31) * $livello / 100 + $livello + 10,
+            'max_hp' => (int) ($pokemon['HP'] * 2 + 31) * $livello / 100 + $livello + 10,
+            'atk' => (int) ($pokemon['ATK'] * 2 + 31) * $livello / 100 + 5,
+            'def' => (int) ($pokemon['DEF'] * 2 + 31) * $livello / 100 + 5,
+            'spa' => (int) ($pokemon['SP_ATK'] * 2 + 31) * $livello / 100 + 5,
+            'spd' => (int) ($pokemon['SP_DEF'] * 2 + 31) * $livello / 100 + 5,
+            'spe' => (int) ($pokemon['SPE'] * 2 + 31) * $livello / 100 + 5,
             'slot' => $pokemon['slot'],
             'sec_form' => $pokemon['sec_form']
         ];
+    }
+
+    // ============================================================
+    // FUNZIONE PER SELEZIONARE POKEMON RANDOM PER AVVERSARIO
+    // ============================================================
+    function getPokemonRandom($conn) {
+        $sql_random = "SELECT * FROM pokemon ORDER BY RAND() LIMIT 1";
+        $result = $conn->query($sql_random);
+        
+        if ($result && $result->num_rows > 0) {
+            return $result->fetch_assoc();
+        }
+        return null;
+    }
+
+    // ============================================================
+    // RECUPERO DATI GIOCATORE
+    // ============================================================
+    
+    $team_pokemon_giocatore = getSquadraByUtente($conn, $id_giocatore);
+    
+    if (!$team_pokemon_giocatore) {
+        die("Nessuna squadra trovata per l'utente $id_giocatore");
+    }
+    
+    // ============================================================
+    // RECUPERO DATI AVVERSARIO
+    // ============================================================
+    
+    $livello_giocatore = 50;
+    $livello_avversario = 50;
+    
+    if ($modalita == 'random') {
+        // Modalità random: singolo Pokémon casuale
+        $pokemon_nemico = getPokemonRandom($conn);
+        if (!$pokemon_nemico) {
+            die("Nessun Pokémon casuale trovato");
+        }
+        $team_avversario = [$pokemon_nemico];
+    } else if ($id_avversario > 0) {
+        // Modalità allenatore specifico
+        $team_pokemon_avversario = getSquadraByUtente($conn, $id_avversario);
+        if (!$team_pokemon_avversario) {
+            die("Nessuna squadra trovata per l'avversario $id_avversario");
+        }
+        $team_avversario = $team_pokemon_avversario;
+        $livello_avversario = 50; // Puoi variare il livello se vuoi
+    } else {
+        die("Modalità di battaglia non valida");
+    }
+
+    // ============================================================
+    // PREPARAZIONE DATI POKEMON GIOCATORE
+    // ============================================================
+    
+    $team_data = [];
+    foreach($team_pokemon_giocatore as $pokemon) {
+        $team_data[] = calcolaStatistiche($pokemon, $livello_giocatore);
     }
     
     // Il primo Pokémon (slot 1) è quello attuale
@@ -122,6 +164,21 @@
     if (!$pokemon_attuale) {
         $pokemon_attuale = $team_data[0];
     }
+
+    // ============================================================
+    // PREPARAZIONE DATI AVVERSARIO
+    // ============================================================
+    
+    $team_avversario_data = [];
+    foreach($team_avversario as $index => $pokemon) {
+        // Assegna uno slot fittizio per l'avversario
+        $pokemon['slot'] = $index + 1;
+        $stats = calcolaStatistiche($pokemon, $livello_avversario);
+        $team_avversario_data[] = $stats;
+    }
+    
+    // Il primo Pokémon dell'avversario è quello attuale
+    $pokemon_nemico_attuale = $team_avversario_data[0];
 
     // ============================================================
     // FUNZIONE PER RECUPERARE LE MOSSE DI UN POKEMON
@@ -143,7 +200,7 @@
         return $mosse;
     }
     
-    // Recupero le mosse del Pokémon attuale
+    // Recupero le mosse del Pokémon attuale del giocatore
     $mosse_attuali = getMossePokemon($conn, $pokemon_attuale['cod'], $pokemon_attuale['sec_form']);
     ?>
     
@@ -182,14 +239,14 @@
                 <div class="enemy-pokemon">
                     <div class="info-frame enemy-frame" id="enemyInfo">
                         <div class="pokemon-name">
-                            <?php echo strtoupper($pokemon_nemico['nome']); ?><span class="registered">®</span>
+                            <?php echo strtoupper($pokemon_nemico_attuale['name']); ?><span class="registered">®</span>
                         </div>
-                        <div class="level-info">Lv50</div>
+                        <div class="level-info">Lv<?php echo $pokemon_nemico_attuale['level']; ?></div>
                         <div class="hp-container">
                             <div class="hp-header">
                                 <span class="hp-label">HP</span>
                                 <span class="hp-numbers" id="enemyHpText">
-                                    <?php echo $pokemon_nemico['HP']; ?>/<?php echo $pokemon_nemico['HP']; ?>
+                                    <?php echo $pokemon_nemico_attuale['hp'] . '/' . $pokemon_nemico_attuale['max_hp']; ?>
                                 </span>
                             </div>
                             <div class="hp-bar-bg">
@@ -198,8 +255,8 @@
                         </div>
                     </div>
                     <div class="sprite-container">
-                        <img src="Img/<?php echo strtolower($pokemon_nemico['nome']); ?>.png" 
-                             alt="<?php echo strtoupper($pokemon_nemico['nome']); ?>"
+                        <img src="Img/<?php echo strtolower($pokemon_nemico_attuale['name']); ?>.png" 
+                             alt="<?php echo strtoupper($pokemon_nemico_attuale['name']); ?>"
                              class="pokemon-sprite"
                              onerror="this.src='Img/default.png'; this.classList.add('error');">
                     </div>
@@ -299,6 +356,7 @@
     <script>
         // DATI DEI POKEMON (passati dal PHP)
         const teamData = <?php echo json_encode($team_data); ?>;
+        const enemyTeamData = <?php echo json_encode($team_avversario_data); ?>;
         
         // Il Pokémon attuale deve essere preso da teamData per avere tutte le proprietà
         let currentPokemon = teamData.find(p => p.slot == <?php echo $pokemon_attuale['slot']; ?>);
@@ -306,17 +364,20 @@
         // Riferimento allo sprite del giocatore
         const playerSprite = document.querySelector('.player-pokemon .pokemon-sprite');
         
+        // Pokémon nemico attuale
+        let currentEnemyPokemon = enemyTeamData[0];
+
         const enemyPokemon = {
-            name: '<?php echo strtoupper($pokemon_nemico['nome']); ?>',
-            cod: <?php echo $pokemon_nemico['cod']; ?>,
-            level: 70,
-            hp: <?php echo $pokemon_nemico['HP']; ?>,
-            maxHp: <?php echo $pokemon_nemico['HP']; ?>,
-            atk: <?php echo $pokemon_nemico['ATK']; ?>,
-            def: <?php echo $pokemon_nemico['DEF']; ?>,
-            spa: <?php echo $pokemon_nemico['SP_ATK']; ?>,
-            spd: <?php echo $pokemon_nemico['SP_DEF']; ?>,
-            spe: <?php echo $pokemon_nemico['SPE']; ?>
+            name: currentEnemyPokemon.name,
+            cod: currentEnemyPokemon.cod,
+            level: currentEnemyPokemon.level,
+            hp: currentEnemyPokemon.hp,
+            maxHp: currentEnemyPokemon.max_hp,
+            atk: currentEnemyPokemon.atk,
+            def: currentEnemyPokemon.def,
+            spa: currentEnemyPokemon.spa,
+            spd: currentEnemyPokemon.spd,
+            spe: currentEnemyPokemon.spe
         };
 
         // Riferimenti agli elementi DOM
@@ -331,6 +392,13 @@
         const playerLevel = document.getElementById('playerLevel');
         const playerHpText = document.getElementById('playerHpText');
         const playerHpBar = document.getElementById('playerHpBar');
+        
+        // Elementi del Pokémon nemico
+        const enemyName = document.querySelector('#enemyInfo .pokemon-name');
+        const enemyLevel = document.querySelector('#enemyInfo .level-info');
+        const enemyHpText = document.getElementById('enemyHpText');
+        const enemyHpBar = document.getElementById('enemyHpBar');
+        const enemySprite = document.querySelector('.enemy-pokemon .pokemon-sprite');
         
         // Colonne mosse
         const movesColumn1 = document.getElementById('movesColumn1');
@@ -680,6 +748,8 @@
         console.log('=== VERIFICA DATI INIZIALI ===');
         console.log('Team Data:', teamData);
         console.log('Current Pokemon:', currentPokemon);
+        console.log('Enemy Team:', enemyTeamData);
+        console.log('Current Enemy:', currentEnemyPokemon);
 
         // ============================================================
         // EVENT LISTENER
