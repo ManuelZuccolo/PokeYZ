@@ -94,8 +94,8 @@
     // Prepara i dati di tutti i Pokémon della squadra
     $team_data = [];
     foreach($team_pokemon as $pokemon) {
-        $hp_base = $pokemon['HP'];
-        $hp_massimi = $hp_base + ($livello_base_giocatore * 2);
+        $hp_base = (int) ($pokemon['HP'] * 2 + 31)*50/100+50+10;
+        $hp_massimi =(int) $hp_base;
         
         $team_data[] = [
             'cod' => $pokemon['cod'],
@@ -103,11 +103,11 @@
             'level' => $livello_base_giocatore,
             'hp' => $hp_massimi, // Inizia con HP pieni
             'max_hp' => $hp_massimi,
-            'atk' => $pokemon['ATK'],
-            'def' => $pokemon['DEF'],
-            'spa' => $pokemon['SP_ATK'],
-            'spd' => $pokemon['SP_DEF'],
-            'spe' => $pokemon['SPE'],
+            'atk' => (int) ($pokemon['ATK'] * 2 + 31)*50/100+50+10,
+            'def' => (int) ($pokemon['DEF'] * 2 + 31)*50/100+50+10,
+            'spa' => (int) ($pokemon['SP_ATK'] * 2 + 31)*50/100+50+10,
+            'spd' => (int) ($pokemon['SP_DEF'] * 2 + 31)*50/100+50+10,
+            'spe' => (int) ($pokemon['SPE'] * 2 + 31)*50/100+50+10,
             'slot' => $pokemon['slot'],
             'sec_form' => $pokemon['sec_form']
         ];
