@@ -84,7 +84,7 @@ if($step === 'salva_tutto'){
                     ORDER BY cod ASC";
             $res = $conn->query($sql);
             while($p = $res->fetch_assoc()):
-                $img = strtolower($p['nome']) . ($p['sec_form'] != 'BASE' ? "_".strtolower($p['sec_form']) : "");
+                $img = strtolower($p['nome']);
             ?>
             <tr>
                 <td><?= str_pad($p['cod'],4,"0",STR_PAD_LEFT) ?></td>
