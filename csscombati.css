@@ -471,3 +471,28 @@ body {
         width: 100%;
     }
 }
+
+/* Stili per i bottoni mossa disabilitati */
+.move-button.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #666;
+}
+
+.move-button.disabled:hover {
+    background-color: #666;
+    transform: none;
+}
+
+/* Assicurati che i menu nascosti funzionino */
+.main-menu.hidden {
+    display: none;
+}
+
+.moves-menu, .pokemon-menu {
+    display: none;
+}
+
+.moves-menu.active, .pokemon-menu.active {
+    display: flex;
+}

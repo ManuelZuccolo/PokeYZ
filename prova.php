@@ -7,9 +7,6 @@
     
     <!-- COLLEGA IL FILE CSS ESTERNO -->
     <link rel="stylesheet" href="csscombati.css">
-    
-    <!-- COLLEGA IL FILE JAVASCRIPT -->
-    <script src="calcolodanno.js"></script>
 </head>
 <body>
     <?php
@@ -26,7 +23,6 @@
     if ($conn->connect_error) {
         die("Connessione fallita: " . $conn->connect_error);
     }
-
 
     // ============================================================
     // RECUPERO DATI DALLA TABELLA SQUADRA
@@ -126,23 +122,29 @@
     if (!$pokemon_attuale) {
         $pokemon_attuale = $team_data[0];
     }
+
+    // ============================================================
+    // FUNZIONE PER RECUPERARE LE MOSSE DI UN POKEMON
+    // ============================================================
+    function getMossePokemon($conn, $cod, $sec_form) {
+        $sql_mosse = "SELECT m.* FROM mossa m
+                      JOIN mossa_x_pokemon mxp ON m.id_mossa = mxp.id_mossa
+                      WHERE mxp.cod = " . $cod . " 
+                      AND mxp.sec_form = '" . $sec_form . "'";
+        
+        $result_mosse = $conn->query($sql_mosse);
+        
+        $mosse = [];
+        if ($result_mosse && $result_mosse->num_rows > 0) {
+            while($row = $result_mosse->fetch_assoc()) {
+                $mosse[] = $row;
+            }
+        }
+        return $mosse;
+    }
     
     // Recupero le mosse del Pokémon attuale
-    $sql_mosse = "SELECT m.* FROM mossa m
-                  JOIN mossa_x_pokemon mxp ON m.id_mossa = mxp.id_mossa
-                  WHERE mxp.cod = " . $pokemon_attuale['cod'] . " 
-                  AND mxp.sec_form = '" . $pokemon_attuale['sec_form'] . "'";
-    
-    $result_mosse = $conn->query($sql_mosse);
-    
-    if ($result_mosse === false) {
-        die("Errore nella query mosse: " . $conn->error);
-    }
-    
-    $mosse_attuali = [];
-    while($row = $result_mosse->fetch_assoc()) {
-        $mosse_attuali[] = $row;
-    }
+    $mosse_attuali = getMossePokemon($conn, $pokemon_attuale['cod'], $pokemon_attuale['sec_form']);
     ?>
     
     <div class="game-container">
@@ -342,74 +344,34 @@
         const backFromMovesBtn = document.getElementById('backFromMovesBtn');
         const backFromPokemonBtn = document.getElementById('backFromPokemonBtn');
 
-        // ============================================================
-        // FUNZIONE PER CAMBIARE POKEMON
-        // ============================================================
-        function switchPokemon(slot) {
-            // Trova il Pokémon selezionato nei teamData
-            const selectedPokemon = teamData.find(p => p.slot == slot);
-            
-            if (!selectedPokemon) {
-                console.error('Pokémon non trovato per slot:', slot);
-                return;
-            }
-            
-            // Non permettere di selezionare lo stesso Pokémon
-            if (selectedPokemon.slot == currentPokemon.slot) {
-                alert(currentPokemon.name + ' è già in battaglia!');
-                return;
-            }
-            
-            // Aggiorna il Pokémon corrente
-            currentPokemon = selectedPokemon;
-            
-            // Aggiorna l'immagine del Pokémon
-            if (playerSprite) {
-                playerSprite.src = 'Img/' + currentPokemon.name.toLowerCase() + '.png';
-                playerSprite.alt = currentPokemon.name;
-            }
-            
-            // Aggiorna le informazioni visualizzate
-            playerName.innerHTML = currentPokemon.name + '<span class="registered">®</span>';
-            playerLevel.textContent = 'Lv' + currentPokemon.level;
-            playerHpText.textContent = currentPokemon.hp + '/' + currentPokemon.max_hp;
-            
-            const hpPercentage = (currentPokemon.hp / currentPokemon.max_hp) * 100;
-            playerHpBar.style.width = hpPercentage + '%';
-            
-            // Aggiorna il nome nel question box
-            currentPokemonNameSpan.textContent = currentPokemon.name;
-            
-            // Aggiorna le mosse nel menu FIGHT
-            updateMovesForPokemon(currentPokemon.cod, currentPokemon.sec_form);
-            
-            // Aggiorna la classe selected nel menu Pokémon
-            document.querySelectorAll('.pokemon-button').forEach(btn => {
-                btn.classList.remove('selected');
-            });
-            document.getElementById('pokemonSlot' + slot).classList.add('selected');
-            
-            // Mostra messaggio di cambio
-            questionBox.innerHTML = 'GO!<br>' + currentPokemon.name + '!';
-            
-            // Torna al menu principale dopo 2 secondi
-            setTimeout(() => {
-                backToMainMenu();
-            }, 2000);
-            
-            console.log('Cambiato a:', currentPokemon.name);
-            console.log('HP:', currentPokemon.hp, '/', currentPokemon.max_hp);
-        }
+        // Variabile per tracciare se è in corso un'azione
+        let isActionInProgress = false;
 
         // ============================================================
-        // FUNZIONE PER AGGIORNARE LE MOSSE
+        // FUNZIONE PER DISABILITARE/ABILITARE TUTTI I BOTTONI
         // ============================================================
-        function updateMovesForPokemon(cod, secForm) {
-            // Per ora manteniamo le mosse attuali
-            console.log('Caricamento mosse per Pokémon cod:', cod, 'secForm:', secForm);
+        function disableAllButtons(disable) {
+            const buttons = [
+                fightBtn, pokemonBtn, bagBtn, runBtn,
+                backFromMovesBtn, backFromPokemonBtn,
+                ...document.querySelectorAll('.move-button'),
+                ...document.querySelectorAll('.pokemon-button')
+            ];
             
-            // In una implementazione reale, qui faresti una chiamata AJAX
-            // Per ora mostriamo solo un messaggio
+            buttons.forEach(button => {
+                if (button) {
+                    button.disabled = disable;
+                    if (disable) {
+                        button.style.opacity = '0.5';
+                        button.style.cursor = 'not-allowed';
+                        button.style.pointerEvents = 'none';
+                    } else {
+                        button.style.opacity = '1';
+                        button.style.cursor = 'pointer';
+                        button.style.pointerEvents = 'auto';
+                    }
+                }
+            });
         }
 
         // ============================================================
@@ -434,15 +396,25 @@
         // FUNZIONE PER USARE UNA MOSSA
         // ============================================================
         function usaMossa(mossa) {
+            // Se è già in corso un'azione, non fare niente
+            if (isActionInProgress) return;
+            
             console.log('Mossa usata:', mossa);
-            console.log('Pokemon attuale:', currentPokemon);
-            console.log('Pokemon nemico:', enemyPokemon);
+            
+            // Imposta che un'azione è in corso
+            isActionInProgress = true;
+            
+            // Disabilita tutti i bottoni
+            disableAllButtons(true);
             
             questionBox.innerHTML = currentPokemon.name + '<br>USED ' + mossa.nome + '!';
             
             // Qui implementerai la logica di danno
             setTimeout(() => {
                 backToMainMenu();
+                // Riabilita i bottoni
+                disableAllButtons(false);
+                isActionInProgress = false;
             }, 2000);
         }
 
@@ -451,8 +423,15 @@
         // ============================================================
         function attachMoveListeners() {
             document.querySelectorAll('.move-button').forEach(button => {
+                // Rimuovi eventuali listener precedenti per evitare duplicati
+                button.replaceWith(button.cloneNode(true));
+            });
+            
+            // Riquery dei bottoni dopo il clone
+            document.querySelectorAll('.move-button').forEach(button => {
                 button.addEventListener('click', function() {
-                    if(this.id !== 'backFromMovesBtn') {
+                    if (isActionInProgress) return;
+                    if(this.id !== 'backFromMovesBtn' && !this.disabled) {
                         document.querySelectorAll('.move-button').forEach(btn => {
                             btn.classList.remove('selected');
                         });
@@ -472,14 +451,235 @@
         }
 
         // ============================================================
+        // FUNZIONE PER AGGIORNARE LE MOSSE VIA AJAX
+        // ============================================================
+        function updateMovesForPokemon(cod, secForm) {
+            console.log('Caricamento mosse per Pokémon cod:', cod, 'secForm:', secForm);
+            
+            // Disabilita i bottoni durante il caricamento
+            disableAllButtons(true);
+            
+            // Fai una chiamata AJAX per recuperare le mosse
+            fetch('get_mosse.php?cod=' + cod + '&sec_form=' + encodeURIComponent(secForm))
+                .then(response => response.json())
+                .then(mosse => {
+                    console.log('Mosse ricevute:', mosse);
+                    
+                    if (mosse.error) {
+                        console.error('Errore nel caricamento mosse:', mosse.error);
+                        disableAllButtons(false);
+                        return;
+                    }
+                    
+                    // Pulisci le colonne delle mosse
+                    movesColumn1.innerHTML = '';
+                    movesColumn2.innerHTML = '';
+                    
+                    // Popola le mosse (massimo 4)
+                    for (let i = 0; i < Math.min(4, mosse.length); i++) {
+                        const move = mosse[i];
+                        const moveButton = document.createElement('button');
+                        moveButton.className = 'move-button' + (i === 0 ? ' selected' : '');
+                        moveButton.setAttribute('data-move', move.nome.toLowerCase());
+                        moveButton.setAttribute('data-power', move.danno);
+                        moveButton.setAttribute('data-type', move.tipo.toLowerCase());
+                        moveButton.setAttribute('data-accuracy', move.accuratezza);
+                        moveButton.textContent = move.nome.toUpperCase();
+                        
+                        // Aggiungi alla colonna appropriata
+                        if (i < 2) {
+                            movesColumn1.appendChild(moveButton);
+                        } else {
+                            movesColumn2.appendChild(moveButton);
+                        }
+                    }
+                    
+                    // Se ci sono meno di 4 mosse, aggiungi placeholder
+                    if (mosse.length < 2) {
+                        for (let i = mosse.length; i < 2; i++) {
+                            const emptyButton = document.createElement('button');
+                            emptyButton.className = 'move-button disabled';
+                            emptyButton.textContent = '-';
+                            emptyButton.disabled = true;
+                            movesColumn1.appendChild(emptyButton);
+                        }
+                    }
+                    
+                    if (mosse.length < 4) {
+                        for (let i = Math.max(2, mosse.length); i < 4; i++) {
+                            const emptyButton = document.createElement('button');
+                            emptyButton.className = 'move-button disabled';
+                            emptyButton.textContent = '-';
+                            emptyButton.disabled = true;
+                            movesColumn2.appendChild(emptyButton);
+                        }
+                    }
+                    
+                    // Riattacca gli event listener alle nuove mosse
+                    attachMoveListeners();
+                    
+                    // Riabilita i bottoni
+                    disableAllButtons(false);
+                })
+                .catch(error => {
+                    console.error('Errore nella chiamata AJAX:', error);
+                    disableAllButtons(false);
+                });
+        }
+
+        // ============================================================
+        // FUNZIONE PER AGGIORNARE IL MENU POKEMON
+        // ============================================================
+        function updatePokemonMenu() {
+            // Ricrea il menu Pokémon con i dati aggiornati
+            pokemonMenu.innerHTML = '';
+            
+            teamData.forEach(pokemon => {
+                const hpPercentage = (pokemon.hp / pokemon.max_hp) * 100;
+                const selectedClass = (pokemon.slot == currentPokemon.slot) ? ' selected' : '';
+                
+                const pokemonButton = document.createElement('button');
+                pokemonButton.className = 'pokemon-button' + selectedClass;
+                pokemonButton.id = 'pokemonSlot' + pokemon.slot;
+                pokemonButton.dataset.slot = pokemon.slot;
+                pokemonButton.dataset.cod = pokemon.cod;
+                pokemonButton.dataset.name = pokemon.name;
+                pokemonButton.dataset.level = pokemon.level;
+                pokemonButton.dataset.hp = pokemon.hp;
+                pokemonButton.dataset.maxhp = pokemon.max_hp;
+                pokemonButton.dataset.atk = pokemon.atk;
+                pokemonButton.dataset.def = pokemon.def;
+                pokemonButton.dataset.spa = pokemon.spa;
+                pokemonButton.dataset.spd = pokemon.spd;
+                pokemonButton.dataset.spe = pokemon.spe;
+                pokemonButton.dataset.secform = pokemon.sec_form;
+                
+                pokemonButton.innerHTML = `
+                    <span>${pokemon.name}</span>
+                    <span class="pokemon-status">Lv${pokemon.level}</span>
+                    <div class="pokemon-hp-bar">
+                        <div class="pokemon-hp-fill" style="width: ${hpPercentage}%;"></div>
+                    </div>
+                    <span>${pokemon.hp}/${pokemon.max_hp}</span>
+                `;
+                
+                pokemonMenu.appendChild(pokemonButton);
+            });
+            
+            // Aggiungi il bottone BACK
+            const backButton = document.createElement('button');
+            backButton.className = 'back-button';
+            backButton.id = 'backFromPokemonBtn';
+            backButton.textContent = '← BACK';
+            pokemonMenu.appendChild(backButton);
+            
+            // Riattacca gli event listener ai nuovi bottoni Pokémon
+            attachPokemonListeners();
+            
+            // Riattacca l'event listener al nuovo bottone BACK
+            document.getElementById('backFromPokemonBtn').addEventListener('click', function() {
+                if (isActionInProgress) return;
+                backToMainMenu();
+            });
+        }
+
+        // ============================================================
+        // FUNZIONE PER ATTACCARE LISTENER AI BOTTONI POKEMON
+        // ============================================================
+        function attachPokemonListeners() {
+            document.querySelectorAll('.pokemon-button').forEach(button => {
+                if(button.id !== 'backFromPokemonBtn') {
+                    button.addEventListener('click', function() {
+                        if (isActionInProgress) return;
+                        const slot = this.dataset.slot;
+                        const hp = this.dataset.hp;
+                        const maxhp = this.dataset.maxhp;
+                        
+                        console.log('Bottone cliccato - Slot:', slot, 'HP:', hp, 'MaxHP:', maxhp);
+                        
+                        if (!hp || !maxhp) {
+                            console.error('Dati HP mancanti nel bottone!');
+                        }
+                        
+                        switchPokemon(slot);
+                    });
+                }
+            });
+        }
+
+        // ============================================================
+        // FUNZIONE PER CAMBIARE POKEMON
+        // ============================================================
+        function switchPokemon(slot) {
+            // Se è già in corso un'azione, non fare niente
+            if (isActionInProgress) return;
+            
+            // Trova il Pokémon selezionato nei teamData
+            const selectedPokemon = teamData.find(p => p.slot == slot);
+            
+            if (!selectedPokemon) {
+                console.error('Pokémon non trovato per slot:', slot);
+                return;
+            }
+            
+            // Non permettere di selezionare lo stesso Pokémon
+            if (selectedPokemon.slot == currentPokemon.slot) {
+                alert(currentPokemon.name + ' è già in battaglia!');
+                return;
+            }
+            
+            // Imposta che un'azione è in corso
+            isActionInProgress = true;
+            
+            // Disabilita tutti i bottoni
+            disableAllButtons(true);
+            
+            // Aggiorna il Pokémon corrente
+            currentPokemon = selectedPokemon;
+            
+            // Aggiorna l'immagine del Pokémon
+            if (playerSprite) {
+                playerSprite.src = 'Img/' + currentPokemon.name.toLowerCase() + '.png';
+                playerSprite.alt = currentPokemon.name;
+            }
+            
+            // Aggiorna le informazioni visualizzate
+            playerName.innerHTML = currentPokemon.name + '<span class="registered">®</span>';
+            playerLevel.textContent = 'Lv' + currentPokemon.level;
+            playerHpText.textContent = currentPokemon.hp + '/' + currentPokemon.max_hp;
+            
+            const hpPercentage = (currentPokemon.hp / currentPokemon.max_hp) * 100;
+            playerHpBar.style.width = hpPercentage + '%';
+            
+            // Aggiorna il nome nel question box
+            currentPokemonNameSpan.textContent = currentPokemon.name;
+            
+            // Aggiorna le mosse nel menu FIGHT
+            updateMovesForPokemon(currentPokemon.cod, currentPokemon.sec_form);
+            
+            // Aggiorna il menu Pokémon
+            updatePokemonMenu();
+            
+            // Mostra messaggio di cambio
+            questionBox.innerHTML = 'GO!<br>' + currentPokemon.name + '!';
+            
+            // Torna al menu principale dopo 2 secondi
+            setTimeout(() => {
+                backToMainMenu();
+                // Riabilita i bottoni
+                disableAllButtons(false);
+                isActionInProgress = false;
+            }, 2000);
+            
+            console.log('Cambiato a:', currentPokemon.name);
+        }
+
+        // ============================================================
         // VERIFICA INIZIALE DEI DATI
         // ============================================================
         console.log('=== VERIFICA DATI INIZIALI ===');
         console.log('Team Data:', teamData);
         console.log('Current Pokemon:', currentPokemon);
-        console.log('HP currentPokemon:', currentPokemon.hp);
-        console.log('Max HP currentPokemon:', currentPokemon.max_hp);
-        console.log('==============================');
 
         // ============================================================
         // EVENT LISTENER
@@ -487,6 +687,7 @@
         
         // FIGHT - mostra menu mosse
         fightBtn.addEventListener('click', function() {
+            if (isActionInProgress) return;
             mainMenu.classList.add('hidden');
             movesMenu.classList.add('active');
             pokemonMenu.classList.remove('active');
@@ -496,7 +697,7 @@
                 btn.classList.remove('selected');
             });
             
-            const firstMove = document.querySelector('.move-button');
+            const firstMove = document.querySelector('.move-button:not(.disabled)');
             if(firstMove) {
                 firstMove.classList.add('selected');
             }
@@ -506,6 +707,7 @@
 
         // POKEMON - mostra menu Pokémon
         pokemonBtn.addEventListener('click', function() {
+            if (isActionInProgress) return;
             mainMenu.classList.add('hidden');
             pokemonMenu.classList.add('active');
             movesMenu.classList.remove('active');
@@ -520,68 +722,63 @@
 
         // BAG
         bagBtn.addEventListener('click', function() {
+            if (isActionInProgress) return;
             document.querySelectorAll('.command-button').forEach(btn => {
                 btn.classList.remove('selected');
             });
             this.classList.add('selected');
             questionBox.innerHTML = 'BAG IS<br>EMPTY';
-            setTimeout(backToMainMenu, 2000);
+            
+            // Imposta che un'azione è in corso
+            isActionInProgress = true;
+            disableAllButtons(true);
+            
+            setTimeout(() => {
+                backToMainMenu();
+                disableAllButtons(false);
+                isActionInProgress = false;
+            }, 2000);
         });
 
         // RUN
         runBtn.addEventListener('click', function() {
+            if (isActionInProgress) return;
             document.querySelectorAll('.command-button').forEach(btn => {
                 btn.classList.remove('selected');
             });
             this.classList.add('selected');
             questionBox.innerHTML = "CAN'T ESCAPE!";
-            setTimeout(backToMainMenu, 2000);
+            
+            // Imposta che un'azione è in corso
+            isActionInProgress = true;
+            disableAllButtons(true);
+            
+            setTimeout(() => {
+                backToMainMenu();
+                disableAllButtons(false);
+                isActionInProgress = false;
+            }, 2000);
         });
 
         // BACK dai menu
-        backFromMovesBtn.addEventListener('click', backToMainMenu);
-        backFromPokemonBtn.addEventListener('click', backToMainMenu);
-
-        // Event listener per i Pokémon nel menu di cambio
-        document.querySelectorAll('.pokemon-button').forEach(button => {
-            if(button.id !== 'backFromPokemonBtn') {
-                button.addEventListener('click', function() {
-                    const slot = this.dataset.slot;
-                    const hp = this.dataset.hp;
-                    const maxhp = this.dataset.maxhp;
-                    
-                    console.log('Bottone cliccato - Slot:', slot, 'HP:', hp, 'MaxHP:', maxhp);
-                    
-                    // Verifica che i dati siano presenti
-                    if (!hp || !maxhp) {
-                        console.error('Dati HP mancanti nel bottone!');
-                        console.log('Dataset completo:', this.dataset);
-                    }
-                    
-                    switchPokemon(slot);
-                });
-            }
+        backFromMovesBtn.addEventListener('click', function() {
+            if (isActionInProgress) return;
+            backToMainMenu();
         });
+
+        backFromPokemonBtn.addEventListener('click', function() {
+            if (isActionInProgress) return;
+            backToMainMenu();
+        });
+
+        // Attacca listener alle mosse iniziali
+        attachMoveListeners();
+        
+        // Attacca listener ai bottoni Pokémon iniziali
+        attachPokemonListeners();
 
         // Seleziona FIGHT di default
         fightBtn.classList.add('selected');
-        
-        // Attacca listener alle mosse iniziali
-        attachMoveListeners();
-
-        // ============================================================
-        // DEBUG - Mostra tutti i data attributes dei bottoni Pokémon
-        // ============================================================
-        document.querySelectorAll('.pokemon-button').forEach(button => {
-            if(button.id !== 'backFromPokemonBtn') {
-                console.log('Pokemon button data:', {
-                    slot: button.dataset.slot,
-                    name: button.dataset.name,
-                    hp: button.dataset.hp,
-                    maxhp: button.dataset.maxhp
-                });
-            }
-        });
     </script>
 </body>
 </html>
