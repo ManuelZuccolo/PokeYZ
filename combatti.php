@@ -26,7 +26,7 @@ $scegli = isset($_GET['scegli']);
 <div class="auth-wrapper">
 <div class="auth-card">
 
-<h2>Combatti</h2>
+<h2>Combatti</h2><br>
 
 <?php if(!$scegli): ?>
 
@@ -43,6 +43,7 @@ $scegli = isset($_GET['scegli']);
         <button type="submit" class="main-btn">Scegli Allenatore</button>
     </form>
 </div>
+<a href="squadra.php" class="main-btn">← Indietro</a>
 
 <?php else: ?>
 

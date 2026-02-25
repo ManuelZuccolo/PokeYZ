@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Creato il: Feb 25, 2026 alle 04:11
+-- Creato il: Feb 25, 2026 alle 12:47
 -- Versione del server: 10.4.32-MariaDB
 -- Versione PHP: 8.0.30
 
@@ -370,6 +370,7 @@ INSERT INTO `abilita_pokemon` (`cod`, `sec_form`, `id_abilita`, `segreta`) VALUE
 (6, 'BASE', 1, 0),
 (94, 'BASE', 131, 0),
 (149, 'BASE', 2, 1),
+(445, 'BASE', 10, 0),
 (644, 'BASE', 164, 0);
 
 -- --------------------------------------------------------
@@ -1291,18 +1292,21 @@ CREATE TABLE `mossa_x_pokemon` (
 
 INSERT INTO `mossa_x_pokemon` (`id_mossa`, `cod`, `sec_form`) VALUES
 (53, 6, 'BASE'),
+(53, 445, 'BASE'),
+(89, 445, 'BASE'),
 (95, 94, 'BASE'),
 (164, 94, 'BASE'),
 (164, 644, 'BASE'),
 (195, 94, 'BASE'),
 (200, 149, 'BASE'),
 (200, 644, 'BASE'),
-(211, 644, 'BASE'),
 (247, 94, 'BASE'),
 (261, 94, 'BASE'),
 (337, 6, 'BASE'),
 (337, 644, 'BASE'),
 (349, 644, 'BASE'),
+(407, 445, 'BASE'),
+(416, 445, 'BASE'),
 (444, 644, 'BASE'),
 (471, 94, 'BASE'),
 (550, 644, 'BASE'),
@@ -2059,7 +2063,10 @@ INSERT INTO `squadra` (`id_squadra`, `codice_utente`) VALUES
 (7, 7),
 (8, 8),
 (9, 9),
-(10, 10);
+(10, 10),
+(11, 11),
+(12, 12),
+(13, 13);
 
 -- --------------------------------------------------------
 
@@ -2086,9 +2093,14 @@ CREATE TABLE `squadra_pokemon` (
 INSERT INTO `squadra_pokemon` (`id_squadra`, `slot`, `cod`, `sec_form`, `mossa1`, `mossa2`, `mossa3`, `mossa4`, `abilita_scelta`) VALUES
 (7, 1, 6, 'BASE', 53, NULL, NULL, NULL, 1),
 (7, 2, 149, 'BASE', 200, NULL, NULL, NULL, 2),
+(8, 1, 6, 'BASE', 53, 337, NULL, NULL, 1),
 (9, 1, 6, 'BASE', 53, 337, NULL, NULL, 1),
 (9, 2, 94, 'BASE', 95, 164, 195, 247, 131),
-(10, 1, 644, 'BASE', 200, 349, 444, 550, 164);
+(10, 1, 644, 'BASE', 200, 349, 444, 559, 164),
+(10, 2, 149, 'BASE', 200, NULL, NULL, NULL, 2),
+(10, 3, 445, 'BASE', 53, 89, 407, 416, 10),
+(11, 1, 94, 'BASE', 95, 164, 195, 247, 131),
+(12, 6, 445, 'BASE', 407, 89, 53, 416, 10);
 
 -- --------------------------------------------------------
 
@@ -2146,7 +2158,10 @@ INSERT INTO `utente` (`codice`, `password`, `nome`) VALUES
 (7, '$2y$10$lbUA0PeQGW/4swnZG3rqH.ZR10u08q37sCsOqEHUP8JBxw7MCdbQi', 'prova'),
 (8, '$2y$10$uo7NJWyVI03vX53KrgS1aulXFeHzJrom9FlE5.NBoLBvxOepixzuG', 'madreperla'),
 (9, '$2y$10$9Z5o2B3YjfWbxAxxbcC6OOLt/7SXXKKWpwWe/vElvTN87fTRISYz6', 'xingye'),
-(10, '$2y$10$N2PTD4K1qcsb/fNr3hhzzOvQh3ZkeEStcDB3h3qZyq0pqegxijawi', 'manuz');
+(10, '$2y$10$N2PTD4K1qcsb/fNr3hhzzOvQh3ZkeEStcDB3h3qZyq0pqegxijawi', 'manuz'),
+(11, 'allenatore', 'Ye'),
+(12, 'allenatore', 'Cynthia'),
+(13, 'allenatore', 'Manuel');
 
 --
 -- Indici per le tabelle scaricate
@@ -2269,7 +2284,7 @@ ALTER TABLE `abilita`
 -- AUTO_INCREMENT per la tabella `utente`
 --
 ALTER TABLE `utente`
-  MODIFY `codice` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `codice` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- Limiti per le tabelle scaricate
