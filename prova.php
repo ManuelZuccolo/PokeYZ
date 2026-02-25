@@ -103,11 +103,11 @@
             'level' => $livello_base_giocatore,
             'hp' => $hp_massimi, // Inizia con HP pieni
             'max_hp' => $hp_massimi,
-            'atk' => (int) ($pokemon['ATK'] * 2 + 31)*50/100+50+10;,
-            'def' => (int) ($pokemon['DEF'] * 2 + 31)*50/100+50+10;,
-            'spa' => (int) ($pokemon['SP_ATK'] * 2 + 31)*50/100+50+10;,
-            'spd' => (int) ($pokemon['SP_DEF'] * 2 + 31)*50/100+50+10;,
-            'spe' => (int) ($pokemon['SPE'] * 2 + 31)*50/100+50+10;,
+            'atk' => (int) ($pokemon['ATK'] * 2 + 31)*50/100+50+10,
+            'def' => (int) ($pokemon['DEF'] * 2 + 31)*50/100+50+10,
+            'spa' => (int) ($pokemon['SP_ATK'] * 2 + 31)*50/100+50+10,
+            'spd' => (int) ($pokemon['SP_DEF'] * 2 + 31)*50/100+50+10,
+            'spe' => (int) ($pokemon['SPE'] * 2 + 31)*50/100+50+10,
             'slot' => $pokemon['slot'],
             'sec_form' => $pokemon['sec_form']
         ];
