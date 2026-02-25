@@ -16,20 +16,13 @@ let aggcrt2=0;
 let dannotot;
 let turn=1;
 
-function aggiornaBarraHP() {
-    let hpMassimo = 182; 
-    let percentuale = (hp2 / hpMassimo) * 100;
-    
-    document.getElementById('hpRight').style.width = percentuale + '%';
-    
-    document.getElementById('hpRightText').innerHTML = Math.floor(hp2) + '/' + hpMassimo;
-    
-    // Se vuoi aggiornare anche la barra di sinistra quando serve
-    aggiornaBarraHPSinistra();
-}
 
-function switchpokemon(){
-    
+function debolezze(elemento,ele1,ele2){
+    switch(elemento){
+        case fuoco : if(ele1 == "erba" || ele2 == "erba" || ele1 == "metallo" || ele2 == "metallo" || ele1 == "coleottero" || ele2 == "coleottero" || ele1 == "ghiacio"){
+
+        }
+    }
 }
 
 function turni(valut,elemento,danno,accuratezza,effet){

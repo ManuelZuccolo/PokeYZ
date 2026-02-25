@@ -27,12 +27,13 @@
         die("Connessione fallita: " . $conn->connect_error);
     }
 
+
     // ============================================================
     // RECUPERO DATI DALLA TABELLA SQUADRA
     // ============================================================
     
     // Recupero l'id_squadra per l'utente 7
-    $sql_squadra = "SELECT id_squadra FROM squadra WHERE codice_utente = 7";
+    $sql_squadra = "SELECT id_squadra FROM squadra WHERE codice_utente = 8";
     $result_squadra = $conn->query($sql_squadra);
     
     if ($result_squadra === false) {
