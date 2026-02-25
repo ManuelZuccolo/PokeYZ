@@ -6,7 +6,7 @@
     <title>Pokémon FireRed - Battaglia</title>
     
     <!-- COLLEGA IL FILE CSS ESTERNO -->
-    <link rel="stylesheet" href="csscombati">
+    <link rel="stylesheet" href="csscombati.css">
     
     <!-- COLLEGA IL FILE JAVASCRIPT -->
     <script src="calcolodanno.js"></script>
@@ -33,7 +33,7 @@
     // ============================================================
     
     // Recupero l'id_squadra per l'utente 7
-    $sql_squadra = "SELECT id_squadra FROM squadra WHERE codice_utente = 8";
+    $sql_squadra = "SELECT id_squadra FROM squadra WHERE codice_utente = 11";
     $result_squadra = $conn->query($sql_squadra);
     
     if ($result_squadra === false) {
@@ -152,7 +152,10 @@
                 <!-- POKEMON GIOCATORE (attuale) - in basso a sinistra -->
                 <div class="player-pokemon" id="playerPokemonContainer">
                     <div class="sprite-container">
-                        <div class="sprite-placeholder"></div>
+                        <img src="Img/<?php echo strtolower($pokemon_attuale['name']); ?>.png" 
+                             alt="<?php echo $pokemon_attuale['name']; ?>"
+                             class="pokemon-sprite"
+                             onerror="this.src='Img/default.png'; this.classList.add('error');">
                     </div>
                     <div class="info-frame" id="playerInfo">
                         <div class="pokemon-name" id="playerName">
@@ -179,7 +182,7 @@
                         <div class="pokemon-name">
                             <?php echo strtoupper($pokemon_nemico['nome']); ?><span class="registered">®</span>
                         </div>
-                        <div class="level-info">Lv70</div>
+                        <div class="level-info">Lv50</div>
                         <div class="hp-container">
                             <div class="hp-header">
                                 <span class="hp-label">HP</span>
@@ -193,7 +196,10 @@
                         </div>
                     </div>
                     <div class="sprite-container">
-                        <div class="sprite-placeholder"></div>
+                        <img src="Img/<?php echo strtolower($pokemon_nemico['nome']); ?>.png" 
+                             alt="<?php echo strtoupper($pokemon_nemico['nome']); ?>"
+                             class="pokemon-sprite"
+                             onerror="this.src='Img/default.png'; this.classList.add('error');">
                     </div>
                 </div>
             </div>
@@ -295,6 +301,9 @@
         // Il Pokémon attuale deve essere preso da teamData per avere tutte le proprietà
         let currentPokemon = teamData.find(p => p.slot == <?php echo $pokemon_attuale['slot']; ?>);
         
+        // Riferimento allo sprite del giocatore
+        const playerSprite = document.querySelector('.player-pokemon .pokemon-sprite');
+        
         const enemyPokemon = {
             name: '<?php echo strtoupper($pokemon_nemico['nome']); ?>',
             cod: <?php echo $pokemon_nemico['cod']; ?>,
@@ -353,6 +362,12 @@
             
             // Aggiorna il Pokémon corrente
             currentPokemon = selectedPokemon;
+            
+            // Aggiorna l'immagine del Pokémon
+            if (playerSprite) {
+                playerSprite.src = 'Img/' + currentPokemon.name.toLowerCase() + '.png';
+                playerSprite.alt = currentPokemon.name;
+            }
             
             // Aggiorna le informazioni visualizzate
             playerName.innerHTML = currentPokemon.name + '<span class="registered">®</span>';
