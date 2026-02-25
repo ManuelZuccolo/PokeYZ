@@ -1,0 +1,12 @@
+2026-02-25 12:45:08 - get_mosse.php chiamato con cod: 6, sec_form: BASE
+2026-02-25 12:45:08 - Query: SELECT m.* FROM mossa m
+                  JOIN mossa_x_pokemon mxp ON m.id_mossa = mxp.id_mossa
+                  WHERE mxp.cod = 6 
+                  AND mxp.sec_form = 'BASE'
+2026-02-25 12:45:08 - Trovate 2 mosse
+2026-02-25 12:45:33 - get_mosse.php chiamato con cod: 6, sec_form: BASE
+2026-02-25 12:45:33 - Query: SELECT m.* FROM mossa m
+                  JOIN mossa_x_pokemon mxp ON m.id_mossa = mxp.id_mossa
+                  WHERE mxp.cod = 6 
+                  AND mxp.sec_form = 'BASE'
+2026-02-25 12:45:33 - Trovate 2 mosse

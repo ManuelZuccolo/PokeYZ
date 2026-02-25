@@ -78,17 +78,25 @@ $modalita = isset($_GET['modalita']) ? $_GET['modalita'] : '';
     // FUNZIONE PER CALCOLARE LE STATISTICHE AL LIVELLO
     // ============================================================
     function calcolaStatistiche($pokemon, $livello) {
+        // Formula Pokémon originale con floor (arrotondamento per difetto)
+        $hp = (($pokemon['HP'] * 2 + 31) * $livello / 100) + $livello + 10;
+        $atk = (($pokemon['ATK'] * 2 + 31) * $livello / 100) + 5;
+        $def = (($pokemon['DEF'] * 2 + 31) * $livello / 100) + 5;
+        $spa = (($pokemon['SP_ATK'] * 2 + 31) * $livello / 100) + 5;
+        $spd = (($pokemon['SP_DEF'] * 2 + 31) * $livello / 100) + 5;
+        $spe = (($pokemon['SPE'] * 2 + 31) * $livello / 100) + 5;
+        
         return [
             'cod' => $pokemon['cod'],
             'name' => strtoupper($pokemon['nome']),
             'level' => $livello,
-            'hp' => (int) ($pokemon['HP'] * 2 + 31) * $livello / 100 + $livello + 10,
-            'max_hp' => (int) ($pokemon['HP'] * 2 + 31) * $livello / 100 + $livello + 10,
-            'atk' => (int) ($pokemon['ATK'] * 2 + 31) * $livello / 100 + 5,
-            'def' => (int) ($pokemon['DEF'] * 2 + 31) * $livello / 100 + 5,
-            'spa' => (int) ($pokemon['SP_ATK'] * 2 + 31) * $livello / 100 + 5,
-            'spd' => (int) ($pokemon['SP_DEF'] * 2 + 31) * $livello / 100 + 5,
-            'spe' => (int) ($pokemon['SPE'] * 2 + 31) * $livello / 100 + 5,
+            'hp' => (int) floor($hp),
+            'max_hp' => (int) floor($hp),
+            'atk' => (int) floor($atk),
+            'def' => (int) floor($def),
+            'spa' => (int) floor($spa),
+            'spd' => (int) floor($spd),
+            'spe' => (int) floor($spe),
             'slot' => $pokemon['slot'],
             'sec_form' => $pokemon['sec_form']
         ];
@@ -138,7 +146,6 @@ $modalita = isset($_GET['modalita']) ? $_GET['modalita'] : '';
             die("Nessuna squadra trovata per l'avversario $id_avversario");
         }
         $team_avversario = $team_pokemon_avversario;
-        $livello_avversario = 50; // Puoi variare il livello se vuoi
     } else {
         die("Modalità di battaglia non valida");
     }
@@ -416,6 +423,20 @@ $modalita = isset($_GET['modalita']) ? $_GET['modalita'] : '';
         let isActionInProgress = false;
 
         // ============================================================
+        // FUNZIONE DI DEBUG PER VERIFICARE I DATI
+        // ============================================================
+        function debugTeamData() {
+            console.log('=== DEBUG TEAM DATA ===');
+            teamData.forEach(pokemon => {
+                console.log(`Slot ${pokemon.slot}: ${pokemon.name} (cod: ${pokemon.cod}, form: ${pokemon.sec_form})`);
+            });
+            console.log('=======================');
+        }
+
+        // Chiamala all'inizio
+        debugTeamData();
+
+        // ============================================================
         // FUNZIONE PER DISABILITARE/ABILITARE TUTTI I BOTTONI
         // ============================================================
         function disableAllButtons(disable) {
@@ -487,54 +508,105 @@ $modalita = isset($_GET['modalita']) ? $_GET['modalita'] : '';
         }
 
         // ============================================================
+        // FUNZIONE PER MOSTRARE MOSSE VUOTE (in caso di errore)
+        // ============================================================
+        function showEmptyMoves() {
+            movesColumn1.innerHTML = '';
+            movesColumn2.innerHTML = '';
+            
+            // Mostra 4 mosse vuote
+            for (let i = 0; i < 2; i++) {
+                const emptyButton = document.createElement('button');
+                emptyButton.className = 'move-button disabled';
+                emptyButton.textContent = '-';
+                emptyButton.disabled = true;
+                movesColumn1.appendChild(emptyButton);
+            }
+            
+            for (let i = 0; i < 2; i++) {
+                const emptyButton = document.createElement('button');
+                emptyButton.className = 'move-button disabled';
+                emptyButton.textContent = '-';
+                emptyButton.disabled = true;
+                movesColumn2.appendChild(emptyButton);
+            }
+        }
+
+        // ============================================================
         // FUNZIONE PER ATTACCARE GLI EVENT LISTENER ALLE MOSSE
         // ============================================================
         function attachMoveListeners() {
-            document.querySelectorAll('.move-button').forEach(button => {
-                // Rimuovi eventuali listener precedenti per evitare duplicati
-                button.replaceWith(button.cloneNode(true));
+            // Prima rimuovi tutti i listener esistenti clonando e sostituendo
+            const oldButtons = document.querySelectorAll('.move-button');
+            oldButtons.forEach(button => {
+                const newButton = button.cloneNode(true);
+                button.parentNode.replaceChild(newButton, button);
             });
             
-            // Riquery dei bottoni dopo il clone
+            // Ora attacha i listener ai nuovi bottoni
             document.querySelectorAll('.move-button').forEach(button => {
-                button.addEventListener('click', function() {
+                button.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    
                     if (isActionInProgress) return;
-                    if(this.id !== 'backFromMovesBtn' && !this.disabled) {
-                        document.querySelectorAll('.move-button').forEach(btn => {
-                            btn.classList.remove('selected');
-                        });
-                        this.classList.add('selected');
-                        
-                        const mossa = {
-                            nome: this.textContent.trim(),
-                            potenza: parseInt(this.dataset.power) || 0,
-                            tipo: this.dataset.type || 'normale',
-                            accuratezza: parseInt(this.dataset.accuracy) || 100
-                        };
-                        
-                        usaMossa(mossa);
-                    }
+                    if (this.disabled) return;
+                    
+                    // Rimuovi selected da tutti i bottoni mossa
+                    document.querySelectorAll('.move-button').forEach(btn => {
+                        btn.classList.remove('selected');
+                    });
+                    
+                    // Aggiungi selected a questo bottone
+                    this.classList.add('selected');
+                    
+                    // Crea oggetto mossa
+                    const mossa = {
+                        nome: this.textContent.trim(),
+                        potenza: parseInt(this.dataset.power) || 0,
+                        tipo: this.dataset.type || 'normale',
+                        accuratezza: parseInt(this.dataset.accuracy) || 100
+                    };
+                    
+                    console.log('Mossa selezionata:', mossa);
+                    usaMossa(mossa);
                 });
             });
+            
+            console.log('Listener mosse riattaccati');
         }
 
         // ============================================================
         // FUNZIONE PER AGGIORNARE LE MOSSE VIA AJAX
         // ============================================================
-        function updateMovesForPokemon(cod, secForm) {
+        function updateMovesForPokemon(cod, secForm, cacheBuster = null) {
             console.log('Caricamento mosse per Pokémon cod:', cod, 'secForm:', secForm);
             
             // Disabilita i bottoni durante il caricamento
             disableAllButtons(true);
             
+            // Costruisci URL con cache buster per evitare problemi di cache
+            let url = 'get_mosse.php?cod=' + cod + '&sec_form=' + encodeURIComponent(secForm);
+            if (cacheBuster) {
+                url += '&_=' + cacheBuster;
+            } else {
+                url += '&_=' + new Date().getTime();
+            }
+            
             // Fai una chiamata AJAX per recuperare le mosse
-            fetch('get_mosse.php?cod=' + cod + '&sec_form=' + encodeURIComponent(secForm))
-                .then(response => response.json())
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Errore nella risposta del server');
+                    }
+                    return response.json();
+                })
                 .then(mosse => {
                     console.log('Mosse ricevute:', mosse);
                     
                     if (mosse.error) {
                         console.error('Errore nel caricamento mosse:', mosse.error);
+                        // Mostra mosse di default o vuote
+                        showEmptyMoves();
                         disableAllButtons(false);
                         return;
                     }
@@ -543,43 +615,48 @@ $modalita = isset($_GET['modalita']) ? $_GET['modalita'] : '';
                     movesColumn1.innerHTML = '';
                     movesColumn2.innerHTML = '';
                     
-                    // Popola le mosse (massimo 4)
-                    for (let i = 0; i < Math.min(4, mosse.length); i++) {
-                        const move = mosse[i];
-                        const moveButton = document.createElement('button');
-                        moveButton.className = 'move-button' + (i === 0 ? ' selected' : '');
-                        moveButton.setAttribute('data-move', move.nome.toLowerCase());
-                        moveButton.setAttribute('data-power', move.danno);
-                        moveButton.setAttribute('data-type', move.tipo.toLowerCase());
-                        moveButton.setAttribute('data-accuracy', move.accuratezza);
-                        moveButton.textContent = move.nome.toUpperCase();
+                    if (mosse.length === 0) {
+                        // Nessuna mossa trovata
+                        showEmptyMoves();
+                    } else {
+                        // Popola le mosse (massimo 4)
+                        for (let i = 0; i < Math.min(4, mosse.length); i++) {
+                            const move = mosse[i];
+                            const moveButton = document.createElement('button');
+                            moveButton.className = 'move-button' + (i === 0 ? ' selected' : '');
+                            moveButton.setAttribute('data-move', move.nome.toLowerCase());
+                            moveButton.setAttribute('data-power', move.danno);
+                            moveButton.setAttribute('data-type', move.tipo.toLowerCase());
+                            moveButton.setAttribute('data-accuracy', move.accuratezza);
+                            moveButton.textContent = move.nome.toUpperCase();
+                            
+                            // Aggiungi alla colonna appropriata
+                            if (i < 2) {
+                                movesColumn1.appendChild(moveButton);
+                            } else {
+                                movesColumn2.appendChild(moveButton);
+                            }
+                        }
                         
-                        // Aggiungi alla colonna appropriata
-                        if (i < 2) {
-                            movesColumn1.appendChild(moveButton);
-                        } else {
-                            movesColumn2.appendChild(moveButton);
+                        // Se ci sono meno di 4 mosse, aggiungi placeholder
+                        if (mosse.length < 2) {
+                            for (let i = mosse.length; i < 2; i++) {
+                                const emptyButton = document.createElement('button');
+                                emptyButton.className = 'move-button disabled';
+                                emptyButton.textContent = '-';
+                                emptyButton.disabled = true;
+                                movesColumn1.appendChild(emptyButton);
+                            }
                         }
-                    }
-                    
-                    // Se ci sono meno di 4 mosse, aggiungi placeholder
-                    if (mosse.length < 2) {
-                        for (let i = mosse.length; i < 2; i++) {
-                            const emptyButton = document.createElement('button');
-                            emptyButton.className = 'move-button disabled';
-                            emptyButton.textContent = '-';
-                            emptyButton.disabled = true;
-                            movesColumn1.appendChild(emptyButton);
-                        }
-                    }
-                    
-                    if (mosse.length < 4) {
-                        for (let i = Math.max(2, mosse.length); i < 4; i++) {
-                            const emptyButton = document.createElement('button');
-                            emptyButton.className = 'move-button disabled';
-                            emptyButton.textContent = '-';
-                            emptyButton.disabled = true;
-                            movesColumn2.appendChild(emptyButton);
+                        
+                        if (mosse.length < 4) {
+                            for (let i = Math.max(2, mosse.length); i < 4; i++) {
+                                const emptyButton = document.createElement('button');
+                                emptyButton.className = 'move-button disabled';
+                                emptyButton.textContent = '-';
+                                emptyButton.disabled = true;
+                                movesColumn2.appendChild(emptyButton);
+                            }
                         }
                     }
                     
@@ -591,6 +668,7 @@ $modalita = isset($_GET['modalita']) ? $_GET['modalita'] : '';
                 })
                 .catch(error => {
                     console.error('Errore nella chiamata AJAX:', error);
+                    showEmptyMoves();
                     disableAllButtons(false);
                 });
         }
@@ -722,8 +800,10 @@ $modalita = isset($_GET['modalita']) ? $_GET['modalita'] : '';
             // Aggiorna il nome nel question box
             currentPokemonNameSpan.textContent = currentPokemon.name;
             
-            // Aggiorna le mosse nel menu FIGHT
-            updateMovesForPokemon(currentPokemon.cod, currentPokemon.sec_form);
+            // FORZA L'AGGIORNAMENTO DELLE MOSSE - anche se è lo stesso Pokémon
+            // Aggiungo un parametro casuale per evitare la cache del browser
+            const cacheBuster = new Date().getTime();
+            updateMovesForPokemon(currentPokemon.cod, currentPokemon.sec_form, cacheBuster);
             
             // Aggiorna il menu Pokémon
             updatePokemonMenu();
