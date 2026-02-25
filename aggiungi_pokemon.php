@@ -81,7 +81,7 @@ if($step === 'salva_tutto'){
             $sql = "SELECT * FROM Pokemon 
                     WHERE cod NOT IN ($lista_esclusi) 
                     AND nome LIKE '%$search%' 
-                    ORDER BY cod ASC LIMIT 15";
+                    ORDER BY cod ASC";
             $res = $conn->query($sql);
             while($p = $res->fetch_assoc()):
                 $img = strtolower($p['nome']) . ($p['sec_form'] != 'BASE' ? "_".strtolower($p['sec_form']) : "");
