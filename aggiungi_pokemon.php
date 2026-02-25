@@ -2,115 +2,44 @@
 session_start();
 if(!isset($_SESSION['user_id'])) header("Location: login.php");
 
-$host = "localhost";
-$user = "root";
-$password = "";
-$dbname = "pokeyz_db";
+$conn = new mysqli("localhost","root","","pokeyz_db");
+$user_id = $_SESSION['user_id'];
 
-$conn = new mysqli($host, $user, $password, $dbname);
-if($conn->connect_error) die("Connessione fallita: ".$conn->connect_error);
-
+// 1. Recupero id_squadra
 $stmt = $conn->prepare("SELECT id_squadra FROM Squadra WHERE codice_utente=?");
-$stmt->bind_param("i", $_SESSION['user_id']);
+$stmt->bind_param("i", $user_id);
 $stmt->execute();
 $id_squadra = $stmt->get_result()->fetch_assoc()['id_squadra'];
 
-$stmt = $conn->prepare("SELECT COUNT(*) AS count FROM Squadra_Pokemon WHERE id_squadra=?");
-$stmt->bind_param("i", $id_squadra);
-$stmt->execute();
-$slot_libero = $stmt->get_result()->fetch_assoc()['count'] + 1;
-
-$step = $_POST['step'] ?? 'scegli_pokemon';
-$errors = [];
-
-// Helper
-function getNome($conn,$table,$id){
-    if(!$id) return "-";
-    $stmt=$conn->prepare("SELECT nome FROM $table WHERE id_$table=?");
-    $stmt->bind_param("i",$id);
-    $stmt->execute();
-    $res=$stmt->get_result();
-    return $res->num_rows?$res->fetch_assoc()['nome']:"-";
+// 2. Recupero i codici dei Pokémon già in squadra per escluderli
+$res_esclusi = $conn->query("SELECT cod FROM Squadra_Pokemon WHERE id_squadra=$id_squadra");
+$esclusi = [];
+while($row = $res_esclusi->fetch_assoc()) {
+    $esclusi[] = $row['cod'];
 }
 
-// STEP logica (come prima)
-if($step==='scegli_pokemon' && isset($_POST['pokemon_cod'])){
-    $pokemon_cod = (int)$_POST['pokemon_cod'];
-    $pokemon_sec_form = $_POST['pokemon_sec_form'];
+// Parametri
+$step = $_POST['step'] ?? (isset($_GET['modifica']) ? 'scegli_abilita' : 'scegli_pokemon');
+$slot_corrente = $_REQUEST['slot'] ?? null;
+$pokemon_cod = $_REQUEST['pokemon_cod'] ?? null;
+$sec_form = $_REQUEST['sec_form'] ?? 'BASE';
+$search = trim($_GET['search'] ?? '');
 
-    // Controllo se è già in squadra (stessa forma!)
-    $stmt = $conn->prepare("
-        SELECT * 
-        FROM Squadra_Pokemon 
-        WHERE id_squadra=? AND cod=? AND sec_form=?
-    ");
-    $stmt->bind_param("iis", $id_squadra, $pokemon_cod, $pokemon_sec_form);
-    $stmt->execute();
-
-    if($stmt->get_result()->num_rows>0){
-        $errors[]="Hai già scelto questo Pokémon!";
-    } else {
-        $_SESSION['scegliendo_pokemon']=$pokemon_cod;
-        $_SESSION['scegliendo_sec_form']=$pokemon_sec_form;
-        $step='scegli_abilita';
-    }
+// Se stiamo modificando, permettiamo di vedere il Pokémon che è già in quello slot
+if(isset($_GET['modifica']) && ($key = array_search($pokemon_cod, $esclusi)) !== false) {
+    unset($esclusi[$key]);
 }
+$lista_esclusi = count($esclusi) > 0 ? implode(',', $esclusi) : '0';
 
-if($step==='scegli_abilita' && isset($_POST['abilita_id'])){
-    $abilita_id=(int)$_POST['abilita_id'];
-    if(!$abilita_id) $errors[]="Devi scegliere un'abilità";
-    else { $_SESSION['abilita_scelta']=$abilita_id; $step='scegli_mosse'; }
-}
-
-if($step==='scegli_mosse' && isset($_POST['mosse'])){
-    $mosse=array_map('intval',$_POST['mosse']);
-    if(count($mosse)<1) $errors[]="Devi scegliere almeno 1 mossa";
-    else {
-        $pokemon_cod=$_SESSION['scegliendo_pokemon'];
-        $abilita_id=$_SESSION['abilita_scelta'];
-        $sec_form = $_SESSION['scegliendo_sec_form'];
-        $m1=$mosse[0]??null;
-        $m2=$mosse[1]??null;
-        $m3=$mosse[2]??null;
-        $m4=$mosse[3]??null;
-        $stmt=$conn->prepare("INSERT INTO Squadra_Pokemon
-            (id_squadra, slot, cod, sec_form, mossa1, mossa2, mossa3, mossa4, abilita_scelta)
-            VALUES (?,?,?,?,?,?,?,?,?)");
-        $stmt->bind_param("iiisiiiii",$id_squadra,$slot_libero,$pokemon_cod,$sec_form,$m1,$m2,$m3,$m4,$abilita_id);
-        $stmt->execute();
-        unset(
-                $_SESSION['scegliendo_pokemon'],
-                $_SESSION['scegliendo_sec_form'],
-                $_SESSION['abilita_scelta']
-            );
-        $slot_libero++;
-        $step='scegli_pokemon';
-    }
-}
-
-// DATI PER FORM
-$ids_scelti=[];
-$stmt=$conn->prepare("SELECT cod, sec_form FROM Squadra_Pokemon WHERE id_squadra=?");
-$stmt->bind_param("i",$id_squadra);
-$stmt->execute();
-$res=$stmt->get_result(); while($r=$res->fetch_assoc()) $ids_scelti[]=$r['cod'];
-$ids_scelti_str=$ids_scelti?implode(",",$ids_scelti):"0";
-$poke_res=$conn->query("SELECT cod, nome, sec_form, tipo1, tipo2 FROM Pokemon WHERE cod NOT IN ($ids_scelti_str) ORDER BY cod ASC");
-
-$abilita_disponibili=[];
-if(isset($_SESSION['scegliendo_pokemon'])){
-    $pid=$_SESSION['scegliendo_pokemon'];
-    $stmt=$conn->prepare("SELECT pa.id_abilita,a.nome FROM Abilita_Pokemon pa JOIN Abilita a ON pa.id_abilita=a.id_Abilita WHERE pa.cod=?");
-    $stmt->bind_param("i",$pid); $stmt->execute();
-    $res=$stmt->get_result(); while($r=$res->fetch_assoc()) $abilita_disponibili[]=$r;
-}
-
-$mosse_disponibili=[];
-if(isset($_SESSION['scegliendo_pokemon'])){
-    $pid=$_SESSION['scegliendo_pokemon'];
-    $stmt=$conn->prepare("SELECT pm.id_mossa,m.nome FROM Mossa_x_pokemon pm JOIN Mossa m ON pm.id_mossa=m.id_Mossa WHERE pm.cod=?");
-    $stmt->bind_param("i",$pid); $stmt->execute();
-    $res=$stmt->get_result(); while($r=$res->fetch_assoc()) $mosse_disponibili[]=$r;
+// ... (Logica di salvataggio identica alla precedente) ...
+if($step === 'salva_tutto'){
+    $abilita_id = $_POST['abilita_id'] ?? null;
+    $mosse = $_POST['mosse'] ?? [];
+    $m = array_pad($mosse, 4, null);
+    $conn->query("DELETE FROM Squadra_Pokemon WHERE id_squadra=$id_squadra AND slot=$slot_corrente");
+    $ins = $conn->prepare("INSERT INTO Squadra_Pokemon (id_squadra, slot, cod, sec_form, mossa1, mossa2, mossa3, mossa4, abilita_scelta) VALUES (?,?,?,?,?,?,?,?,?)");
+    $ins->bind_param("iiisiiiii", $id_squadra, $slot_corrente, $pokemon_cod, $sec_form, $m[0], $m[1], $m[2], $m[3], $abilita_id);
+    if($ins->execute()){ header("Location: squadra.php"); exit(); }
 }
 ?>
 
@@ -118,91 +47,113 @@ if(isset($_SESSION['scegliendo_pokemon'])){
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<title>Scegli Pokémon - PokéYZ</title>
 <link rel="stylesheet" href="style.css?v=1">
 <style>
-.auth-card {width: 90%; max-width: 900px;}
-.top-nav {display:flex; justify-content:space-between; margin-bottom:20px;}
-.choice-btn {padding:5px 10px; margin:2px; cursor:pointer; background:#ffde00; border:2px solid #3b4cca; border-radius:5px; transition:.2s;}
-.choice-btn:hover {background:#3b4cca; color:white;}
-.pokedex-table th, .pokedex-table td{text-align:center;}
+    .auth-card { width: 95%; max-width: 1100px; } /* Allargato anche qui */
+    .header-squadra { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .search-mini { width: 180px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; } 
+    .choice-btn { padding:5px 12px; cursor:pointer; background:#ffde00; border:2px solid #3b4cca; border-radius:5px; font-weight: bold; }
+    .choice-btn:hover { background:#3b4cca; color:white; }
 </style>
 </head>
 <body>
-<header><div class="logo"><h1>PokéYZ</h1></div></header>
 <div class="auth-wrapper">
 <div class="auth-card">
-<div class="top-nav">
-<span>Scegli la tua squadra (<?= $slot_libero-1 ?>/6)</span>
-<a href="index.php" class="main-btn">Torna alla homepage</a>
+
+    <div class="header-squadra">
+        <div>
+            <h2>Configurazione Slot #<?= $slot_corrente ?></h2>
+        </div>
+        <a href="squadra.php" class="main-btn">← Squadra</a>
+    </div>
+
+    <?php if($step === 'scegli_pokemon'): ?>
+        <form method="GET" style="margin-bottom:20px;">
+            <input type="hidden" name="slot" value="<?= $slot_corrente ?>">
+            <input type="text" name="search" class="search-mini" placeholder="Cerca..." value="<?= htmlspecialchars($search) ?>">
+            <button type="submit" class="choice-btn">Cerca</button>
+        </form>
+
+        <table class="pokedex-table">
+            <tr><th>#</th><th>Immagine</th><th>Nome</th><th>Azione</th></tr>
+            <?php
+            // QUERY CON NOT IN PER EVITARE DOPPIONI
+            $sql = "SELECT * FROM Pokemon 
+                    WHERE cod NOT IN ($lista_esclusi) 
+                    AND nome LIKE '%$search%' 
+                    ORDER BY cod ASC LIMIT 15";
+            $res = $conn->query($sql);
+            while($p = $res->fetch_assoc()):
+                $img = strtolower($p['nome']) . ($p['sec_form'] != 'BASE' ? "_".strtolower($p['sec_form']) : "");
+            ?>
+            <tr>
+                <td><?= str_pad($p['cod'],4,"0",STR_PAD_LEFT) ?></td>
+                <td><img src="Img/<?= $img ?>.png" width="40"></td>
+                <td><?= ucfirst($p['nome']) ?></td>
+                <td>
+                    <form method="POST">
+                        <input type="hidden" name="step" value="scegli_abilita">
+                        <input type="hidden" name="slot" value="<?= $slot_corrente ?>">
+                        <input type="hidden" name="pokemon_cod" value="<?= $p['cod'] ?>">
+                        <input type="hidden" name="sec_form" value="<?= $p['sec_form'] ?>">
+                        <button type="submit" class="choice-btn">Seleziona</button>
+                    </form>
+                </td>
+            </tr>
+            <?php endwhile; ?>
+        </table>
+
+    <?php elseif($step === 'scegli_abilita'): ?>
+        <h3>Seleziona l'Abilità:</h3>
+        <table class="pokedex-table">
+            <?php
+            $stmt = $conn->prepare("SELECT a.id_Abilita, a.nome FROM Abilita_Pokemon ap JOIN Abilita a ON ap.id_abilita = a.id_Abilita WHERE ap.cod = ?");
+            $stmt->bind_param("i", $pokemon_cod);
+            $stmt->execute();
+            $res = $stmt->get_result();
+            while($a = $res->fetch_assoc()): ?>
+            <tr>
+                <td><strong><?= $a['nome'] ?></strong></td>
+                <td>
+                    <form method="POST">
+                        <input type="hidden" name="step" value="scegli_mosse">
+                        <input type="hidden" name="slot" value="<?= $slot_corrente ?>">
+                        <input type="hidden" name="pokemon_cod" value="<?= $pokemon_cod ?>">
+                        <input type="hidden" name="sec_form" value="<?= $sec_form ?>">
+                        <input type="hidden" name="abilita_id" value="<?= $a['id_Abilita'] ?>">
+                        <button type="submit" class="choice-btn">Scegli Abilità</button>
+                    </form>
+                </td>
+            </tr>
+            <?php endwhile; ?>
+        </table>
+
+    <?php elseif($step === 'scegli_mosse'): ?>
+        <h3>Scegli le mosse (Max 4):</h3>
+        <form method="POST">
+            <input type="hidden" name="step" value="salva_tutto">
+            <input type="hidden" name="slot" value="<?= $slot_corrente ?>">
+            <input type="hidden" name="pokemon_cod" value="<?= $pokemon_cod ?>">
+            <input type="hidden" name="sec_form" value="<?= $sec_form ?>">
+            <input type="hidden" name="abilita_id" value="<?= $_POST['abilita_id'] ?>">
+            <table class="pokedex-table">
+                <?php
+                $stmt = $conn->prepare("SELECT m.id_Mossa, m.nome FROM Mossa_x_pokemon mp JOIN Mossa m ON mp.id_mossa = m.id_Mossa WHERE mp.cod = ?");
+                $stmt->bind_param("i", $pokemon_cod);
+                $stmt->execute();
+                $res = $stmt->get_result();
+                while($m = $res->fetch_assoc()): ?>
+                <tr>
+                    <td><?= $m['nome'] ?></td>
+                    <td><input type="checkbox" name="mosse[]" value="<?= $m['id_Mossa'] ?>"></td>
+                </tr>
+                <?php endwhile; ?>
+            </table>
+            <button type="submit" class="main-btn" style="margin-top:20px;">Conferma Squadra</button>
+        </form>
+    <?php endif; ?>
+
 </div>
-
-<?php if($errors){foreach($errors as $e) echo "<p class='error-msg'>$e</p>";} ?>
-
-<?php if($step==='scegli_pokemon'): ?>
-<table class="pokedex-table">
-<tr><th>#</th><th>Immagine</th><th>Nome</th><th>Tipo</th><th>Seleziona</th></tr>
-<?php while($p=$poke_res->fetch_assoc()): 
-$imgName=strtolower($p['nome']); if($p['sec_form']!='BASE') $imgName.="_".strtolower($p['sec_form']); ?>
-<tr>
-<td><?= str_pad($p['cod'],4,"0",STR_PAD_LEFT) ?></td>
-<td><img src='Img/<?= $imgName ?>.png' width='50'></td>
-<td><?= ucfirst($p['nome']) ?> <?= $p['sec_form']!='BASE'?"({$p['sec_form']})":"" ?></td>
-<td>
-<span class="type <?= $p['tipo1'] ?>"><?= ucfirst($p['tipo1']) ?></span>
-<?php if($p['tipo2']): ?><span class="type <?= $p['tipo2'] ?>"><?= ucfirst($p['tipo2']) ?></span><?php endif; ?>
-</td>
-<td>
-<form method="POST" style="display:inline;">
-<input type="hidden" name="step" value="scegli_pokemon">
-<input type="hidden" name="pokemon_cod" value="<?= $p['cod'] ?>">
-<input type="hidden" name="pokemon_sec_form" value="<?= $p['sec_form'] ?>">
-<button type="submit" class="choice-btn">Seleziona</button>
-</form>
-</td>
-</tr>
-<?php endwhile; ?>
-</table>
-
-<?php elseif($step==='scegli_abilita'): ?>
-<table class="pokedex-table">
-<tr><th>ID</th><th>Nome Abilità</th><th>Seleziona</th></tr>
-<?php foreach($abilita_disponibili as $a): ?>
-<tr>
-<td><?= $a['id_abilita'] ?></td>
-<td><?= $a['nome'] ?></td>
-<td>
-<form method="POST" style="display:inline;">
-<input type="hidden" name="step" value="scegli_abilita">
-<input type="hidden" name="abilita_id" value="<?= $a['id_abilita'] ?>">
-<button type="submit" class="choice-btn">Seleziona</button>
-</form>
-</td>
-</tr>
-<?php endforeach; ?>
-</table>
-
-<?php elseif($step==='scegli_mosse'): ?>
-<table class="pokedex-table">
-<tr><th>ID</th><th>Nome Mossa</th><th>Seleziona</th></tr>
-<?php foreach($mosse_disponibili as $m): ?>
-<tr>
-<td><?= $m['id_mossa'] ?></td>
-<td><?= $m['nome'] ?></td>
-<td>
-<form method="POST" style="display:inline;">
-<input type="hidden" name="step" value="scegli_mosse">
-<input type="hidden" name="mosse[]" value="<?= $m['id_mossa'] ?>">
-<button type="submit" class="choice-btn">Aggiungi</button>
-</form>
-</td>
-</tr>
-<?php endforeach; ?>
-</table>
-<?php endif; ?>
-
-<hr>
-<a href="squadra.php" class="main-btn">Visualizza la squadra</a>
-</div></div>
+</div>
 </body>
 </html>
