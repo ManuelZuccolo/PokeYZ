@@ -397,8 +397,9 @@ $modalita = isset($_GET['modalita']) ? $_GET['modalita'] : '';
                     <?php foreach($team_data as $index => $pokemon): 
                         $hpPercentage = ($pokemon['hp'] / $pokemon['max_hp']) * 100;
                         $selectedClass = ($pokemon['slot'] == $pokemon_attuale['slot']) ? 'selected' : '';
+                        $disabledClass = ($pokemon['hp'] <= 0) ? 'disabled' : '';
                     ?>
-                    <button class="pokemon-button <?php echo $selectedClass; ?>" 
+                    <button class="pokemon-button <?php echo $selectedClass; ?> <?php echo $disabledClass; ?>" 
                             id="pokemonSlot<?php echo $pokemon['slot']; ?>"
                             data-slot="<?php echo $pokemon['slot']; ?>"
                             data-cod="<?php echo $pokemon['cod']; ?>"
@@ -413,7 +414,8 @@ $modalita = isset($_GET['modalita']) ? $_GET['modalita'] : '';
                             data-spe="<?php echo $pokemon['spe']; ?>"
                             data-secform="<?php echo $pokemon['sec_form']; ?>"
                             data-tipo1="<?php echo $pokemon['tipo1']; ?>"
-                            data-tipo2="<?php echo $pokemon['tipo2']; ?>">
+                            data-tipo2="<?php echo $pokemon['tipo2']; ?>"
+                            <?php echo ($pokemon['hp'] <= 0) ? 'disabled' : ''; ?>>
                         <span><?php echo $pokemon['name']; ?></span>
                         <span class="pokemon-status">Lv<?php echo $pokemon['level']; ?></span>
                         <div class="pokemon-hp-bar">
@@ -466,6 +468,15 @@ $modalita = isset($_GET['modalita']) ? $_GET['modalita'] : '';
         .enemy-trainer {
             color: #ff6b6b;
         }
+        .pokemon-button.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(50%);
+        }
+        .pokemon-button.disabled:hover {
+            background-color: #4a4a4a;
+            transform: none;
+        }
     </style>
 
     <script>
@@ -482,7 +493,18 @@ $modalita = isset($_GET['modalita']) ? $_GET['modalita'] : '';
         
         // Inizializza il gioco quando la pagina è caricata
         window.addEventListener('DOMContentLoaded', function() {
-            initBattle(battleData);
+            // Verifica che le funzioni necessarie siano disponibili
+            if (typeof initBattle === 'function') {
+                initBattle(battleData);
+            } else {
+                console.error('Funzione initBattle non trovata. Verifica che battaglia.js sia caricato correttamente.');
+                // Prova ad inizializzare dopo un breve ritardo
+                setTimeout(function() {
+                    if (typeof initBattle === 'function') {
+                        initBattle(battleData);
+                    }
+                }, 500);
+            }
         });
     </script>
 </body>

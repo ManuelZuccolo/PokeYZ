@@ -44,6 +44,7 @@ let nome1, nome2;
 let aggiornaBarraHPGiocatore = null;
 let aggiornaBarraHPAvversario = null;
 let aggiornaMessaggio = null;
+let onEnemyFainted = null;
 
 function normalizzaTipo(tipo) {
     if (!tipo || tipo === "null" || tipo === "") return null;
@@ -95,7 +96,7 @@ function calcolaEfficacia(tipoAttacco, ele1, ele2 = null) {
     return moltiplicatore;
 }
 
-function initCalcoloDanno(pokemon1, pokemon2, updatePlayerHP, updateEnemyHP, updateMsg) {
+function initCalcoloDanno(pokemon1, pokemon2, updatePlayerHP, updateEnemyHP, updateMsg, enemyFaintedCallback) {
     atk1 = pokemon1.atk;
     def1 = pokemon1.def;
     spa1 = pokemon1.spa;
@@ -133,6 +134,7 @@ function initCalcoloDanno(pokemon1, pokemon2, updatePlayerHP, updateEnemyHP, upd
     aggiornaBarraHPGiocatore = updatePlayerHP;
     aggiornaBarraHPAvversario = updateEnemyHP;
     aggiornaMessaggio = updateMsg;
+    onEnemyFainted = enemyFaintedCallback;
 }
 
 function calcolodanno(elemento, danno, isSpecial, protect, critical = false) {
@@ -183,6 +185,13 @@ function calcolodanno(elemento, danno, isSpecial, protect, critical = false) {
             else if (efficacia === 0) efficaciaMsg = "Non ha effetto...";
             
             aggiornaMessaggio(nome1 + " usa " + elemento + "! " + efficaciaMsg);
+        }
+        
+        // Se il Pokémon nemico è stato sconfitto, chiama il callback
+        if (hp2 <= 0 && onEnemyFainted) {
+            setTimeout(() => {
+                onEnemyFainted();
+            }, 1500);
         }
         
         resolve(dannotot);
@@ -367,12 +376,33 @@ function stato() {
     }
 }
 
+// Aggiungi funzione per aggiornare il Pokémon nemico corrente
+function aggiornaPokemonNemico(nuovoPokemon) {
+    atk2 = nuovoPokemon.atk;
+    def2 = nuovoPokemon.def;
+    spa2 = nuovoPokemon.spa;
+    spd2 = nuovoPokemon.spd;
+    spe2 = nuovoPokemon.spe;
+    hp2 = nuovoPokemon.hp;
+    maxHp2 = nuovoPokemon.max_hp;
+    tipo2_1 = nuovoPokemon.tipo1;
+    tipo2_2 = nuovoPokemon.tipo2;
+    nome2 = nuovoPokemon.name;
+    
+    daTogliere2 = Math.ceil(maxHp2 * 0.06);
+    daTogliere4 = Math.ceil(maxHp2 * 0.12);
+    effeto2 = null;
+    avvelentoturni2 = 1;
+    protetto2 = false;
+}
+
 window.calcoloDanno = {
     init: initCalcoloDanno,
     eseguiMossa: eseguiMossa,
     gestisciTurno: gestisciTurno,
     stato: stato,
     calcolaEfficacia: calcolaEfficacia,
+    aggiornaPokemonNemico: aggiornaPokemonNemico,
     getHp: () => ({ hp1, hp2, maxHp1, maxHp2 }),
     isPokemon1Morto: () => hp1 <= 0,
     isPokemon2Morto: () => hp2 <= 0,
