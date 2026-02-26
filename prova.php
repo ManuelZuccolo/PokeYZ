@@ -42,9 +42,6 @@ $modalita = isset($_GET['modalita']) ? $_GET['modalita'] : '';
         die("Connessione fallita: " . $conn->connect_error);
     }
 
-    // ============================================================
-    // FUNZIONE PER OTTENERE LA SQUADRA COMPLETA CON MOSSE
-    // ============================================================
     function getSquadraCompletaByUtente($conn, $id_utente) {
         // Recupero l'id_squadra per l'utente
         $sql_squadra = "SELECT id_squadra FROM squadra WHERE codice_utente = $id_utente";
@@ -81,9 +78,6 @@ $modalita = isset($_GET['modalita']) ? $_GET['modalita'] : '';
         ];
     }
 
-    // ============================================================
-    // FUNZIONE PER CALCOLARE LE STATISTICHE AL LIVELLO
-    // ============================================================
     function calcolaStatistiche($pokemon, $livello) {
         // Formula Pokémon originale con floor (arrotondamento per difetto)
         $hp = (($pokemon['HP'] * 2 + 31) * $livello / 100) + $livello + 10;
@@ -116,9 +110,6 @@ $modalita = isset($_GET['modalita']) ? $_GET['modalita'] : '';
         ];
     }
 
-    // ============================================================
-    // FUNZIONE PER RECUPERARE LE MOSSE DALLA SQUADRA
-    // ============================================================
     function getMossePokemonSquadra($conn, $id_squadra, $cod, $sec_form, $slot) {
         // Prima ottieni gli ID delle mosse dalla squadra_pokemon
         $sql_squadra = "SELECT mossa1, mossa2, mossa3, mossa4 
@@ -164,9 +155,6 @@ $modalita = isset($_GET['modalita']) ? $_GET['modalita'] : '';
         return $mosse;
     }
 
-    // ============================================================
-    // FUNZIONE PER RECUPERARE NOME UTENTE
-    // ============================================================
     function getNomeUtente($conn, $id_utente) {
         $sql = "SELECT nome FROM utente WHERE codice = " . $id_utente;
         $result = $conn->query($sql);
@@ -177,9 +165,6 @@ $modalita = isset($_GET['modalita']) ? $_GET['modalita'] : '';
         return "Allenatore " . $id_utente;
     }
 
-    // ============================================================
-    // RECUPERO DATI GIOCATORE
-    // ============================================================
     
     $squadra_giocatore = getSquadraCompletaByUtente($conn, $id_giocatore);
     
@@ -190,9 +175,6 @@ $modalita = isset($_GET['modalita']) ? $_GET['modalita'] : '';
     $id_squadra_giocatore = $squadra_giocatore['id_squadra'];
     $team_pokemon_giocatore = $squadra_giocatore['pokemon'];
     
-    // ============================================================
-    // RECUPERO DATI AVVERSARIO
-    // ============================================================
     
     $livello_giocatore = 50;
     $livello_avversario = 50;
@@ -244,9 +226,6 @@ $modalita = isset($_GET['modalita']) ? $_GET['modalita'] : '';
         die("Modalità di battaglia non valida");
     }
 
-    // ============================================================
-    // PREPARAZIONE DATI POKEMON GIOCATORE
-    // ============================================================
     
     $team_data = [];
     foreach($team_pokemon_giocatore as $pokemon) {
@@ -265,10 +244,6 @@ $modalita = isset($_GET['modalita']) ? $_GET['modalita'] : '';
     if (!$pokemon_attuale) {
         $pokemon_attuale = $team_data[0];
     }
-
-    // ============================================================
-    // PREPARAZIONE DATI AVVERSARIO
-    // ============================================================
     
     $team_avversario_data = [];
     foreach($team_avversario as $pokemon) {
