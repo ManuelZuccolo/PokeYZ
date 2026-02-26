@@ -23,6 +23,7 @@ $modalita = isset($_GET['modalita']) ? $_GET['modalita'] : '';
     <link rel="stylesheet" href="csscombati.css">
     
     <!-- COLLEGA IL FILE JAVASCRIPT ESTERNO -->
+    <script src="calcolodanno.js" defer></script>
     <script src="battaglia.js" defer></script>
 </head>
 <body>
@@ -379,13 +380,14 @@ $modalita = isset($_GET['modalita']) ? $_GET['modalita'] : '';
                             $move = $mosse_attuali[$i];
                         ?>
                         <button class="move-button <?php echo $i === 0 ? 'selected' : ''; ?>" 
-                                data-move-id="<?php echo $move['id_mossa']; ?>"
-                                data-move="<?php echo strtolower($move['nome']); ?>" 
-                                data-power="<?php echo $move['danno']; ?>" 
-                                data-type="<?php echo strtolower($move['tipo']); ?>" 
-                                data-accuracy="<?php echo $move['accuratezza']; ?>">
-                            <?php echo strtoupper($move['nome']); ?>
-                        </button>
+        data-move-id="<?php echo $move['id_mossa']; ?>"
+        data-move="<?php echo strtolower($move['nome']); ?>" 
+        data-power="<?php echo $move['danno']; ?>" 
+        data-type="<?php echo strtolower($move['tipo']); ?>" 
+        data-accuracy="<?php echo $move['accuratezza']; ?>"
+        data-category="<?php echo $move['categoria']; ?>">  <!-- AGGIUNTO -->
+    <?php echo strtoupper($move['nome']); ?>
+</button>
                         <?php endfor; ?>
                         <?php for($i = count($mosse_attuali); $i < 2; $i++): ?>
                         <button class="move-button disabled" disabled>-</button>
