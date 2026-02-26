@@ -22,7 +22,7 @@ $modalita = isset($_GET['modalita']) ? $_GET['modalita'] : '';
     <!-- COLLEGA IL FILE CSS ESTERNO -->
     <link rel="stylesheet" href="csscombati.css">
     
-    <!-- COLLEGA IL FILE JAVASCRIPT ESTERNO -->
+    <!-- COLLEGA I FILE JAVASCRIPT ESTERNI -->
     <script src="calcolodanno.js" defer></script>
     <script src="battaglia.js" defer></script>
 </head>
@@ -109,7 +109,10 @@ $modalita = isset($_GET['modalita']) ? $_GET['modalita'] : '';
             'mossa1' => $pokemon['mossa1'] ?? null,
             'mossa2' => $pokemon['mossa2'] ?? null,
             'mossa3' => $pokemon['mossa3'] ?? null,
-            'mossa4' => $pokemon['mossa4'] ?? null
+            'mossa4' => $pokemon['mossa4'] ?? null,
+            // AGGIUNTO: includi i tipi del Pokémon
+            'tipo1' => $pokemon['tipo1'],
+            'tipo2' => $pokemon['tipo2']
         ];
     }
 
@@ -380,14 +383,14 @@ $modalita = isset($_GET['modalita']) ? $_GET['modalita'] : '';
                             $move = $mosse_attuali[$i];
                         ?>
                         <button class="move-button <?php echo $i === 0 ? 'selected' : ''; ?>" 
-        data-move-id="<?php echo $move['id_mossa']; ?>"
-        data-move="<?php echo strtolower($move['nome']); ?>" 
-        data-power="<?php echo $move['danno']; ?>" 
-        data-type="<?php echo strtolower($move['tipo']); ?>" 
-        data-accuracy="<?php echo $move['accuratezza']; ?>"
-        data-category="<?php echo $move['categoria']; ?>">  <!-- AGGIUNTO -->
-    <?php echo strtoupper($move['nome']); ?>
-</button>
+                                data-move-id="<?php echo $move['id_mossa']; ?>"
+                                data-move="<?php echo strtolower($move['nome']); ?>" 
+                                data-power="<?php echo $move['danno']; ?>" 
+                                data-type="<?php echo strtolower($move['tipo']); ?>" 
+                                data-accuracy="<?php echo $move['accuratezza']; ?>"
+                                data-category="<?php echo $move['categoria']; ?>">
+                            <?php echo strtoupper($move['nome']); ?>
+                        </button>
                         <?php endfor; ?>
                         <?php for($i = count($mosse_attuali); $i < 2; $i++): ?>
                         <button class="move-button disabled" disabled>-</button>
@@ -402,7 +405,8 @@ $modalita = isset($_GET['modalita']) ? $_GET['modalita'] : '';
                                 data-move="<?php echo strtolower($move['nome']); ?>" 
                                 data-power="<?php echo $move['danno']; ?>" 
                                 data-type="<?php echo strtolower($move['tipo']); ?>" 
-                                data-accuracy="<?php echo $move['accuratezza']; ?>">
+                                data-accuracy="<?php echo $move['accuratezza']; ?>"
+                                data-category="<?php echo $move['categoria']; ?>">
                             <?php echo strtoupper($move['nome']); ?>
                         </button>
                         <?php endfor; ?>
@@ -432,7 +436,9 @@ $modalita = isset($_GET['modalita']) ? $_GET['modalita'] : '';
                             data-spa="<?php echo $pokemon['spa']; ?>"
                             data-spd="<?php echo $pokemon['spd']; ?>"
                             data-spe="<?php echo $pokemon['spe']; ?>"
-                            data-secform="<?php echo $pokemon['sec_form']; ?>">
+                            data-secform="<?php echo $pokemon['sec_form']; ?>"
+                            data-tipo1="<?php echo $pokemon['tipo1']; ?>"
+                            data-tipo2="<?php echo $pokemon['tipo2']; ?>">
                         <span><?php echo $pokemon['name']; ?></span>
                         <span class="pokemon-status">Lv<?php echo $pokemon['level']; ?></span>
                         <div class="pokemon-hp-bar">

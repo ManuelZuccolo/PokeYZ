@@ -1,8 +1,6 @@
 // ============================================================
 // VARIABILI GLOBALI
 // ============================================================
-
-// Queste variabili verranno inizializzate dal PHP
 let teamData = [];
 let enemyTeamData = [];
 let idSquadraGiocatore = 0;
@@ -14,7 +12,7 @@ let nomeAvversario = '';
 let currentPokemon = null;
 let currentEnemyPokemon = null;
 
-// Riferimenti agli elementi DOM
+// Riferimenti DOM
 let playerSprite, playerName, playerLevel, playerHpText, playerHpBar;
 let enemyName, enemyLevel, enemyHpText, enemyHpBar, enemySprite;
 let mainMenu, movesMenu, pokemonMenu, questionBox, currentPokemonNameSpan;
@@ -28,12 +26,11 @@ let isActionInProgress = false;
 let calcoloDannoReady = false;
 
 // ============================================================
-// FUNZIONE DI INIZIALIZZAZIONE
+// FUNZIONE: initBattle
 // ============================================================
 function initBattle(data) {
-    console.log('Inizializzazione battaglia con dati:', data);
+    console.log('🎮 Inizializzazione battaglia con dati:', data);
     
-    // Assegna i dati passati dal PHP
     teamData = data.teamData;
     enemyTeamData = data.enemyTeamData;
     idSquadraGiocatore = data.idSquadraGiocatore;
@@ -41,89 +38,93 @@ function initBattle(data) {
     nomeGiocatore = data.nomeGiocatore;
     nomeAvversario = data.nomeAvversario;
     
-    // Inizializza i Pokémon attuali
     currentPokemon = teamData.find(p => p.slot == data.currentPokemonSlot);
     currentEnemyPokemon = enemyTeamData[0];
     
-    // Aggiungi i tipi ai Pokémon (dal database)
-    // Nota: dovrai passare anche i tipi dal PHP
-    if (!currentPokemon.tipo1) currentPokemon.tipo1 = getTipoFromCod(currentPokemon.cod);
-    if (!currentPokemon.tipo2) currentPokemon.tipo2 = null;
-    if (!currentEnemyPokemon.tipo1) currentEnemyPokemon.tipo1 = getTipoFromCod(currentEnemyPokemon.cod);
-    if (!currentEnemyPokemon.tipo2) currentEnemyPokemon.tipo2 = null;
+    // I tipi sono già inclusi nei dati dal PHP, non serve più getTipoFromCod
+    console.log('Tipi Pokémon:', {
+        giocatore: currentPokemon.name,
+        tipo1: currentPokemon.tipo1,
+        tipo2: currentPokemon.tipo2,
+        avversario: currentEnemyPokemon.name,
+        tipo1: currentEnemyPokemon.tipo1,
+        tipo2: currentEnemyPokemon.tipo2
+    });
     
-    // Inizializza i riferimenti DOM
     initDOMReferences();
     
-    // Inizializza il modulo di calcolo danno
+    // Inizializza modulo calcolo danno
     if (window.calcoloDanno) {
         calcoloDannoReady = true;
-        
-        // Prepara oggetti Pokémon per il calcolo danno
-        const pokemon1 = {
-            ...currentPokemon,
-            tipo1: currentPokemon.tipo1,
-            tipo2: currentPokemon.tipo2
-        };
-        
-        const pokemon2 = {
-            ...currentEnemyPokemon,
-            tipo1: currentEnemyPokemon.tipo1,
-            tipo2: currentEnemyPokemon.tipo2
-        };
-        
-        window.calcoloDanno.init(
-            pokemon1,
-            pokemon2,
-            updatePlayerHP,
-            updateEnemyHP,
-            updateBattleMessage
-        );
+        aggiornaStatisticheCalcoloDanno();
         console.log('✅ Modulo calcolo danno inizializzato');
     } else {
         console.error('❌ Modulo calcolo danno non trovato!');
     }
     
-    // Debug
     debugTeamData();
-    
-    // Inizializza gli event listener
     attachMoveListeners();
     attachPokemonListeners();
     
-    // Seleziona FIGHT di default
     fightBtn.classList.add('selected');
     
-    // Carica le mosse iniziali
     setTimeout(() => {
         updateMovesForPokemon(currentPokemon.cod, currentPokemon.sec_form, currentPokemon.slot);
     }, 100);
 }
 
-// Funzione temporanea per ottenere i tipi (da sostituire con dati reali dal PHP)
-function getTipoFromCod(cod) {
-    // Questa è una mappa approssimativa - idealmente dovresti passare i tipi dal PHP
-    const tipi = {
-        6: "Fire",
-        94: "Ghost",
-        149: "Dragon",
-        260: "Water",
-        350: "Water",
-        384: "Dragon",
-        407: "Grass",
-        423: "Water",
-        442: "Ghost",
-        445: "Dragon",
-        448: "Fighting",
-        475: "Psychic",
-        612: "Dragon",
-        644: "Dragon"
+// ============================================================
+// FUNZIONE: aggiornaStatisticheCalcoloDanno
+// SCOPO: Aggiorna le statistiche nel modulo calcolodanno.js
+// ============================================================
+function aggiornaStatisticheCalcoloDanno() {
+    if (!calcoloDannoReady || !window.calcoloDanno) return;
+    
+    console.log('🔄 Aggiornamento statistiche per calcolo danno');
+    console.log('Tipi correnti:', {
+        giocatore: { tipo1: currentPokemon.tipo1, tipo2: currentPokemon.tipo2 },
+        avversario: { tipo1: currentEnemyPokemon.tipo1, tipo2: currentEnemyPokemon.tipo2 }
+    });
+    
+    const pokemon1 = {
+        atk: currentPokemon.atk,
+        def: currentPokemon.def,
+        spa: currentPokemon.spa,
+        spd: currentPokemon.spd,
+        spe: currentPokemon.spe,
+        hp: currentPokemon.hp,
+        max_hp: currentPokemon.max_hp,
+        tipo1: currentPokemon.tipo1,
+        tipo2: currentPokemon.tipo2,
+        name: currentPokemon.name
     };
-    return tipi[cod] || "Normal";
+    
+    const pokemon2 = {
+        atk: currentEnemyPokemon.atk,
+        def: currentEnemyPokemon.def,
+        spa: currentEnemyPokemon.spa,
+        spd: currentEnemyPokemon.spd,
+        spe: currentEnemyPokemon.spe,
+        hp: currentEnemyPokemon.hp,
+        max_hp: currentEnemyPokemon.max_hp,
+        tipo1: currentEnemyPokemon.tipo1,
+        tipo2: currentEnemyPokemon.tipo2,
+        name: currentEnemyPokemon.name
+    };
+    
+    window.calcoloDanno.init(
+        pokemon1,
+        pokemon2,
+        updatePlayerHP,
+        updateEnemyHP,
+        updateBattleMessage
+    );
+    
+    console.log('✅ Statistiche calcolo danno aggiornate');
 }
 
 // ============================================================
-// FUNZIONI DI AGGIORNAMENTO UI (chiamate da calcolodanno.js)
+// FUNZIONI DI AGGIORNAMENTO UI
 // ============================================================
 function updatePlayerHP(newHP) {
     if (!currentPokemon) return;
@@ -146,7 +147,7 @@ function updateBattleMessage(msg) {
 }
 
 // ============================================================
-// INIZIALIZZAZIONE RIFERIMENTI DOM
+// FUNZIONE: initDOMReferences
 // ============================================================
 function initDOMReferences() {
     playerSprite = document.getElementById('playerSprite');
@@ -177,29 +178,28 @@ function initDOMReferences() {
     backFromMovesBtn = document.getElementById('backFromMovesBtn');
     backFromPokemonBtn = document.getElementById('backFromPokemonBtn');
     
-    // Attacca gli event listener principali
     attachMainListeners();
 }
 
 // ============================================================
-// FUNZIONE DI DEBUG
+// FUNZIONE: debugTeamData
 // ============================================================
 function debugTeamData() {
     console.log('=== DEBUG TEAM DATA ===');
     console.log('Giocatore:', nomeGiocatore);
     teamData.forEach(pokemon => {
-        console.log(`Slot ${pokemon.slot}: ${pokemon.name} (cod: ${pokemon.cod}, form: ${pokemon.sec_form})`);
+        console.log(`Slot ${pokemon.slot}: ${pokemon.name} (Tipo1: ${pokemon.tipo1}, Tipo2: ${pokemon.tipo2}, HP: ${pokemon.hp}/${pokemon.max_hp})`);
     });
     console.log('=== DEBUG ENEMY TEAM DATA ===');
     console.log('Avversario:', nomeAvversario);
     enemyTeamData.forEach(pokemon => {
-        console.log(`Slot ${pokemon.slot}: ${pokemon.name} (cod: ${pokemon.cod}, form: ${pokemon.sec_form})`);
+        console.log(`Slot ${pokemon.slot}: ${pokemon.name} (Tipo1: ${pokemon.tipo1}, Tipo2: ${pokemon.tipo2}, HP: ${pokemon.hp}/${pokemon.max_hp})`);
     });
     console.log('=======================');
 }
 
 // ============================================================
-// FUNZIONE PER DISABILITARE/ABILITARE TUTTI I BOTTONI
+// FUNZIONE: disableAllButtons
 // ============================================================
 function disableAllButtons(disable) {
     const buttons = [
@@ -226,7 +226,7 @@ function disableAllButtons(disable) {
 }
 
 // ============================================================
-// FUNZIONE PER TORNARE AL MENU PRINCIPALE
+// FUNZIONE: backToMainMenu
 // ============================================================
 function backToMainMenu() {
     mainMenu.classList.remove('hidden');
@@ -244,21 +244,16 @@ function backToMainMenu() {
 }
 
 // ============================================================
-// FUNZIONE PER USARE UNA MOSSA (MODIFICATA PER USARE CALCOLO DANNO)
+// FUNZIONE: usaMossa
 // ============================================================
 function usaMossa(mossa) {
-    // Se è già in corso un'azione, non fare niente
     if (isActionInProgress) return;
     
     console.log('🎯 Mossa usata:', mossa);
     
-    // Imposta che un'azione è in corso
     isActionInProgress = true;
-    
-    // Disabilita tutti i bottoni
     disableAllButtons(true);
     
-    // Verifica se il modulo calcolo danno è pronto
     if (!calcoloDannoReady || !window.calcoloDanno) {
         console.error('❌ Modulo calcolo danno non disponibile');
         questionBox.innerHTML = 'ERROR: Damage calculator not ready!';
@@ -270,32 +265,26 @@ function usaMossa(mossa) {
         return;
     }
     
-    // Determina se la mossa è speciale o fisica
     const isSpecial = (mossa.categoria === 'special');
-    
-    // Mostra messaggio iniziale
     questionBox.innerHTML = currentPokemon.name + '<br>USED ' + mossa.nome + '!';
     
-    // Esegui la mossa usando il modulo di calcolo danno
     setTimeout(async () => {
         try {
             const risultato = await window.calcoloDanno.eseguiMossa(mossa, isSpecial);
             console.log('📊 Risultato mossa:', risultato);
             
-            // Controlla se l'avversario è morto
             if (window.calcoloDanno.isPokemon2Morto()) {
                 setTimeout(() => {
                     questionBox.innerHTML = 'ENEMY ' + currentEnemyPokemon.name + '<br>FAINTED!';
                     
                     setTimeout(() => {
-                        // Qui andrà la logica per cambiare Pokémon avversario
                         backToMainMenu();
                         disableAllButtons(false);
                         isActionInProgress = false;
+                        // TODO: Logica per cambiare Pokémon avversario
                     }, 2000);
                 }, 1500);
             } else {
-                // Simula il turno dell'avversario
                 setTimeout(() => {
                     mossaAvversario();
                 }, 2000);
@@ -311,11 +300,12 @@ function usaMossa(mossa) {
     }, 1000);
 }
 
-// Funzione per gestire la mossa dell'avversario
+// ============================================================
+// FUNZIONE: mossaAvversario (DA COMPLETARE)
+// ============================================================
 function mossaAvversario() {
     if (!calcoloDannoReady) return;
     
-    // Mossa finta dell'avversario (da implementare con mosse reali)
     const mossaFinta = {
         nome: "ATTACK",
         tipo: "Normal",
@@ -327,8 +317,6 @@ function mossaAvversario() {
     questionBox.innerHTML = 'ENEMY ' + currentEnemyPokemon.name + '<br>USED ' + mossaFinta.nome + '!';
     
     setTimeout(async () => {
-        // Qui dovresti chiamare il calcolo danno per l'avversario
-        // Per ora solo un messaggio
         setTimeout(() => {
             backToMainMenu();
             disableAllButtons(false);
@@ -338,7 +326,7 @@ function mossaAvversario() {
 }
 
 // ============================================================
-// FUNZIONE PER MOSTRARE MOSSE VUOTE
+// FUNZIONE: showEmptyMoves
 // ============================================================
 function showEmptyMoves() {
     movesColumn1.innerHTML = '';
@@ -362,7 +350,7 @@ function showEmptyMoves() {
 }
 
 // ============================================================
-// FUNZIONE PER ATTACCARE GLI EVENT LISTENER ALLE MOSSE
+// FUNZIONE: attachMoveListeners
 // ============================================================
 function attachMoveListeners() {
     const oldButtons = document.querySelectorAll('.move-button');
@@ -381,10 +369,8 @@ function attachMoveListeners() {
             document.querySelectorAll('.move-button').forEach(btn => {
                 btn.classList.remove('selected');
             });
-            
             this.classList.add('selected');
             
-            // Crea oggetto mossa con tutti i dati necessari
             const mossa = {
                 id: this.dataset.moveId,
                 nome: this.textContent.trim(),
@@ -404,10 +390,10 @@ function attachMoveListeners() {
 }
 
 // ============================================================
-// FUNZIONE PER AGGIORNARE LE MOSSE VIA AJAX
+// FUNZIONE: updateMovesForPokemon
 // ============================================================
 function updateMovesForPokemon(cod, secForm, slot, cacheBuster = null) {
-    console.log('Caricamento mosse per Pokémon cod:', cod, 'secForm:', secForm, 'slot:', slot);
+    console.log('📥 Caricamento mosse per Pokémon cod:', cod, 'secForm:', secForm, 'slot:', slot);
     
     disableAllButtons(true);
     
@@ -426,7 +412,7 @@ function updateMovesForPokemon(cod, secForm, slot, cacheBuster = null) {
             return response.json();
         })
         .then(mosse => {
-            console.log('Mosse ricevute:', mosse);
+            console.log('📦 Mosse ricevute:', mosse);
             
             if (mosse.error) {
                 console.error('Errore nel caricamento mosse:', mosse.error);
@@ -485,14 +471,14 @@ function updateMovesForPokemon(cod, secForm, slot, cacheBuster = null) {
             disableAllButtons(false);
         })
         .catch(error => {
-            console.error('Errore nella chiamata AJAX:', error);
+            console.error('❌ Errore nella chiamata AJAX:', error);
             showEmptyMoves();
             disableAllButtons(false);
         });
 }
 
 // ============================================================
-// FUNZIONE PER AGGIORNARE IL MENU POKEMON
+// FUNZIONE: updatePokemonMenu
 // ============================================================
 function updatePokemonMenu() {
     pokemonMenu.innerHTML = '';
@@ -516,6 +502,8 @@ function updatePokemonMenu() {
         pokemonButton.dataset.spd = pokemon.spd;
         pokemonButton.dataset.spe = pokemon.spe;
         pokemonButton.dataset.secform = pokemon.sec_form;
+        pokemonButton.dataset.tipo1 = pokemon.tipo1;
+        pokemonButton.dataset.tipo2 = pokemon.tipo2 || '';
         
         pokemonButton.innerHTML = `
             <span>${pokemon.name}</span>
@@ -544,7 +532,7 @@ function updatePokemonMenu() {
 }
 
 // ============================================================
-// FUNZIONE PER ATTACCARE LISTENER AI BOTTONI POKEMON
+// FUNZIONE: attachPokemonListeners
 // ============================================================
 function attachPokemonListeners() {
     document.querySelectorAll('.pokemon-button').forEach(button => {
@@ -552,14 +540,14 @@ function attachPokemonListeners() {
             button.addEventListener('click', function() {
                 if (isActionInProgress) return;
                 const slot = this.dataset.slot;
-                const hp = this.dataset.hp;
-                const maxhp = this.dataset.maxhp;
+                console.log('🔄 Cambio Pokémon richiesto - Slot:', slot);
                 
-                console.log('Bottone cliccato - Slot:', slot, 'HP:', hp, 'MaxHP:', maxhp);
-                
-                if (!hp || !maxhp) {
-                    console.error('Dati HP mancanti nel bottone!');
-                }
+                // Log dei tipi del Pokémon selezionato
+                console.log('Tipi Pokémon selezionato:', {
+                    nome: this.dataset.name,
+                    tipo1: this.dataset.tipo1,
+                    tipo2: this.dataset.tipo2
+                });
                 
                 switchPokemon(slot);
             });
@@ -568,7 +556,7 @@ function attachPokemonListeners() {
 }
 
 // ============================================================
-// FUNZIONE PER CAMBIARE POKEMON
+// FUNZIONE: switchPokemon (CORRETTA)
 // ============================================================
 function switchPokemon(slot) {
     if (isActionInProgress) return;
@@ -585,16 +573,25 @@ function switchPokemon(slot) {
         return;
     }
     
+    console.log('🔄 Cambio da', currentPokemon.name, 'a', selectedPokemon.name);
+    console.log('Tipi nuovo Pokémon:', {
+        tipo1: selectedPokemon.tipo1,
+        tipo2: selectedPokemon.tipo2
+    });
+    
     isActionInProgress = true;
     disableAllButtons(true);
     
+    // Aggiorna Pokémon corrente
     currentPokemon = selectedPokemon;
     
+    // Aggiorna sprite
     if (playerSprite) {
         playerSprite.src = 'Img/' + currentPokemon.name.toLowerCase() + '.png';
         playerSprite.alt = currentPokemon.name;
     }
     
+    // Aggiorna statistiche visive
     playerName.innerHTML = currentPokemon.name + '<span class="registered">®</span>';
     playerLevel.textContent = 'Lv' + currentPokemon.level;
     playerHpText.textContent = currentPokemon.hp + '/' + currentPokemon.max_hp;
@@ -604,24 +601,36 @@ function switchPokemon(slot) {
     
     currentPokemonNameSpan.textContent = currentPokemon.name;
     
+    // ===== AGGIORNA STATISTICHE NEL MODULO CALCOLO DANNO =====
+    aggiornaStatisticheCalcoloDanno();
+    
+    // Carica nuove mosse
     const cacheBuster = new Date().getTime();
     updateMovesForPokemon(currentPokemon.cod, currentPokemon.sec_form, currentPokemon.slot, cacheBuster);
     
+    // Aggiorna menu Pokémon
     updatePokemonMenu();
     
+    // Messaggio di cambio
     questionBox.innerHTML = 'GO!<br>' + currentPokemon.name + '!';
     
+    // Sblocca dopo 2 secondi
     setTimeout(() => {
         backToMainMenu();
         disableAllButtons(false);
         isActionInProgress = false;
+        console.log('✅ Cambio completato, nuove statistiche:', {
+            nome: currentPokemon.name,
+            tipo1: currentPokemon.tipo1,
+            tipo2: currentPokemon.tipo2,
+            atk: currentPokemon.atk,
+            def: currentPokemon.def
+        });
     }, 2000);
-    
-    console.log('Cambiato a:', currentPokemon.name);
 }
 
 // ============================================================
-// FUNZIONE PER ATTACCARE I LISTENER PRINCIPALI
+// FUNZIONE: attachMainListeners
 // ============================================================
 function attachMainListeners() {
     fightBtn.addEventListener('click', function() {
