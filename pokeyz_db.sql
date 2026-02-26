@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Creato il: Feb 25, 2026 alle 04:11
+-- Creato il: Feb 25, 2026 alle 21:37
 -- Versione del server: 10.4.32-MariaDB
 -- Versione PHP: 8.0.30
 
@@ -370,6 +370,17 @@ INSERT INTO `abilita_pokemon` (`cod`, `sec_form`, `id_abilita`, `segreta`) VALUE
 (6, 'BASE', 1, 0),
 (94, 'BASE', 131, 0),
 (149, 'BASE', 2, 1),
+(260, 'MEGA', 35, 0),
+(350, 'BASE', 65, 0),
+(384, 'MEGA', 191, 0),
+(407, 'BASE', 32, 0),
+(423, 'BASE', 62, 0),
+(442, 'BASE', 48, 0),
+(445, 'BASE', 10, 0),
+(448, 'BASE', 81, 0),
+(475, 'BASE', 154, 1),
+(612, 'BASE', 105, 0),
+(612, 'BASE', 128, 1),
 (644, 'BASE', 164, 0);
 
 -- --------------------------------------------------------
@@ -389,18 +400,167 @@ CREATE TABLE `battaglia` (
 -- --------------------------------------------------------
 
 --
+-- Struttura della tabella `effetto`
+--
+
+CREATE TABLE `effetto` (
+  `id_effetto` int(11) NOT NULL,
+  `nome` varchar(20) NOT NULL,
+  `bersaglio` varchar(30) DEFAULT NULL,
+  `durata` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dump dei dati per la tabella `effetto`
+--
+
+INSERT INTO `effetto` (`id_effetto`, `nome`, `bersaglio`, `durata`) VALUES
+(1, 'burn', 'opponent', NULL),
+(2, 'regular_poison', 'opponent', NULL),
+(3, 'badly_poison', 'opponent', NULL),
+(4, 'paralysis', 'opponent', NULL),
+(5, 'sleep', 'opponent', 4),
+(6, 'frozen', 'opponent', NULL),
+(7, 'confusion', 'opponent', 4),
+(8, 'flinch', 'opponent', 1),
+(9, 'infatuation', 'opponent', NULL),
+(10, 'curse', 'opponent', NULL),
+(11, 'nightmare', 'opponent', NULL),
+(12, 'leech_seed', 'opponent', NULL),
+(13, 'torment', 'opponent', NULL),
+(14, 'taunt', 'opponent', 3),
+(15, 'disable', 'opponent', 4),
+(16, 'encore', 'opponent', 3),
+(17, 'heal_block', 'opponent', 5),
+(18, '+1ATK', 'self', NULL),
+(19, '+1DEF', 'self', NULL),
+(20, '+1SP_ATK', 'self', NULL),
+(21, '+1SP_DEF', 'self', NULL),
+(22, '+1SPE', 'self', NULL),
+(23, '+1ACC', 'self', NULL),
+(24, '+1EVA', 'self', NULL),
+(25, '+2ATK', 'self', NULL),
+(26, '+2DEF', 'self', NULL),
+(27, '+2SP_ATK', 'self', NULL),
+(28, '+2SP_DEF', 'self', NULL),
+(29, '+2SPE', 'self', NULL),
+(30, '+2ACC', 'self', NULL),
+(31, '+2EVA', 'self', NULL),
+(32, '+3ATK', 'self', NULL),
+(33, 'crit_rate_up_1', 'self', NULL),
+(34, 'crit_rate_up_2', 'self', NULL),
+(35, '-1ATK', 'opponent', NULL),
+(36, '-1DEF', 'opponent', NULL),
+(37, '-1SP_ATK', 'opponent', NULL),
+(38, '-1SP_DEF', 'opponent', NULL),
+(39, '-1SPE', 'opponent', NULL),
+(40, '-1ACC', 'opponent', NULL),
+(41, '-1EVA', 'opponent', NULL),
+(42, '-2ATK', 'opponent', NULL),
+(43, '-2DEF', 'opponent', NULL),
+(44, '-2SP_ATK', 'opponent', NULL),
+(45, '-2SP_DEF', 'opponent', NULL),
+(46, '-2SPE', 'opponent', NULL),
+(47, 'multihit_2-5', NULL, NULL),
+(48, 'multihit_2', NULL, NULL),
+(49, 'multihit_3', NULL, NULL),
+(50, 'multihit_5', NULL, NULL),
+(51, 'heal_50', 'self', NULL),
+(52, 'heal_75', 'self', NULL),
+(53, 'heal_100', 'self', NULL),
+(54, 'recoil_25', 'self', NULL),
+(55, 'recoil_33', 'self', NULL),
+(56, 'recoil_50', 'self', NULL),
+(57, 'instakill', 'opponent', NULL),
+(58, 'gone', 'self', 1),
+(59, 'underground', 'self', 1),
+(60, 'underwater', 'self', 1),
+(61, 'airborne', 'self', 1),
+(62, 'delay', 'self', 1),
+(63, 'recharge', 'self', 1),
+(64, 'switch_forced', 'opponent', NULL),
+(65, 'switch_self', 'self', NULL),
+(66, 'block', 'self', 1),
+(67, 'endure', 'self', 1),
+(68, 'bide', 'self', 2),
+(69, 'focus_energy', 'self', NULL),
+(70, 'lock_on', 'self', NULL),
+(71, 'pursuit', 'opponent', NULL),
+(72, 'thrash', 'self', 3),
+(73, 'substitute', 'self', NULL),
+(74, 'transform', 'self', NULL),
+(75, 'minimize', 'self', NULL),
+(76, 'teleport', 'self', NULL),
+(77, 'roost', 'self', 1),
+(78, 'spikes', 'field', NULL),
+(79, 'toxic_spikes', 'field', NULL),
+(80, 'stealth_rock', 'field', NULL),
+(81, 'sticky_web', 'field', NULL),
+(82, 'rain', 'field', 5),
+(83, 'sun', 'field', 5),
+(84, 'sandstorm', 'field', 5),
+(85, 'hail', 'field', 5),
+(86, 'fog', 'field', 5),
+(87, 'heavy_rain', 'field', 5),
+(88, 'harsh_sun', 'field', 5),
+(89, 'strong_winds', 'field', 5),
+(90, 'electric_terrain', 'field', 5),
+(91, 'grassy_terrain', 'field', 5),
+(92, 'misty_terrain', 'field', 5),
+(93, 'psychic_terrain', 'field', 5),
+(94, 'magnitude', NULL, NULL),
+(95, 'gyro_ball', NULL, NULL),
+(96, 'rollout', 'self', 5),
+(97, 'uproar', 'self', 3),
+(98, 'stockpile_1', 'self', NULL),
+(99, 'stockpile_2', 'self', NULL),
+(100, 'stockpile_3', 'self', NULL),
+(101, 'swallow', 'self', NULL),
+(102, 'spit_up', 'opponent', NULL);
+
+-- --------------------------------------------------------
+
+--
 -- Struttura della tabella `effetto_mossa`
 --
 
 CREATE TABLE `effetto_mossa` (
   `id_effetto` int(11) NOT NULL,
   `id_mossa` int(11) NOT NULL,
-  `tipo_effetto` varchar(30) DEFAULT NULL,
-  `valore_effetto` int(11) DEFAULT NULL,
-  `bersaglio` varchar(30) DEFAULT NULL,
-  `probabilita` int(11) DEFAULT NULL,
-  `durata` int(11) DEFAULT NULL
+  `probabilita` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dump dei dati per la tabella `effetto_mossa`
+--
+
+INSERT INTO `effetto_mossa` (`id_effetto`, `id_mossa`, `probabilita`) VALUES
+(1, 53, 10),
+(1, 261, NULL),
+(2, 188, 30),
+(3, 92, NULL),
+(5, 95, NULL),
+(6, 8, 10),
+(6, 58, 10),
+(7, 200, 100),
+(8, 127, 20),
+(8, 326, 10),
+(18, 318, 10),
+(18, 339, NULL),
+(19, 318, 10),
+(19, 339, NULL),
+(20, 318, 10),
+(21, 318, 10),
+(22, 318, 10),
+(25, 14, NULL),
+(36, 242, 20),
+(38, 94, 10),
+(38, 247, 20),
+(40, 330, 30),
+(57, 12, NULL),
+(59, 89, NULL),
+(72, 200, NULL),
+(73, 164, NULL);
 
 -- --------------------------------------------------------
 
@@ -1290,23 +1450,59 @@ CREATE TABLE `mossa_x_pokemon` (
 --
 
 INSERT INTO `mossa_x_pokemon` (`id_mossa`, `cod`, `sec_form`) VALUES
+(8, 260, 'MEGA'),
+(12, 612, 'BASE'),
+(14, 475, 'BASE'),
 (53, 6, 'BASE'),
+(53, 445, 'BASE'),
+(57, 350, 'BASE'),
+(58, 350, 'BASE'),
+(58, 423, 'BASE'),
+(89, 260, 'MEGA'),
+(89, 423, 'BASE'),
+(89, 445, 'BASE'),
+(92, 407, 'BASE'),
+(94, 442, 'BASE'),
 (95, 94, 'BASE'),
+(127, 260, 'MEGA'),
 (164, 94, 'BASE'),
 (164, 644, 'BASE'),
+(188, 407, 'BASE'),
+(188, 423, 'BASE'),
 (195, 94, 'BASE'),
 (200, 149, 'BASE'),
+(200, 612, 'BASE'),
 (200, 644, 'BASE'),
-(211, 644, 'BASE'),
+(242, 612, 'BASE'),
+(243, 350, 'BASE'),
+(245, 448, 'BASE'),
 (247, 94, 'BASE'),
+(247, 442, 'BASE'),
 (261, 94, 'BASE'),
+(318, 442, 'BASE'),
+(326, 407, 'BASE'),
+(330, 423, 'BASE'),
 (337, 6, 'BASE'),
 (337, 644, 'BASE'),
+(339, 475, 'BASE'),
+(349, 612, 'BASE'),
 (349, 644, 'BASE'),
+(392, 350, 'BASE'),
+(396, 448, 'BASE'),
+(399, 442, 'BASE'),
+(406, 448, 'BASE'),
+(407, 445, 'BASE'),
+(409, 475, 'BASE'),
+(412, 407, 'BASE'),
+(416, 445, 'BASE'),
+(416, 612, 'BASE'),
+(427, 475, 'BASE'),
+(432, 448, 'BASE'),
 (444, 644, 'BASE'),
 (471, 94, 'BASE'),
 (550, 644, 'BASE'),
-(559, 644, 'BASE');
+(559, 644, 'BASE'),
+(612, 260, 'MEGA');
 
 -- --------------------------------------------------------
 
@@ -1598,6 +1794,7 @@ INSERT INTO `pokemon` (`cod`, `sec_form`, `nome`, `tipo1`, `tipo2`, `regione`, `
 (258, 'BASE', 'mudkip', 'water', NULL, 3, 'monster', 'water1', 'normale', 1, 50, 70, 50, 50, 50, 40),
 (259, 'BASE', 'marshtomp', 'water', 'ground', 3, 'monster', 'water1', 'normale', 1, 70, 85, 70, 60, 70, 50),
 (260, 'BASE', 'swampert', 'water', 'ground', 3, 'monster', 'water1', 'normale', 1, 100, 110, 90, 85, 90, 60),
+(260, 'MEGA', 'mega-swampert', 'water', 'ground', 3, 'monster', 'water1', 'mega', 1, 100, 150, 110, 95, 110, 70),
 (261, 'BASE', 'poochyena', 'dark', NULL, 3, 'field', NULL, 'normale', 1, 35, 55, 35, 30, 30, 35),
 (262, 'BASE', 'mightyena', 'dark', NULL, 3, 'field', NULL, 'normale', 1, 70, 90, 70, 60, 60, 70),
 (263, 'BASE', 'zigzagoon', 'normal', NULL, 3, 'field', NULL, 'normale', 1, 38, 30, 41, 30, 41, 60),
@@ -1722,6 +1919,7 @@ INSERT INTO `pokemon` (`cod`, `sec_form`, `nome`, `tipo1`, `tipo2`, `regione`, `
 (382, 'BASE', 'kyogre', 'water', NULL, 3, 'undiscovered', NULL, 'leggendario', 1, 100, 100, 90, 150, 140, 90),
 (383, 'BASE', 'groudon', 'ground', NULL, 3, 'undiscovered', NULL, 'leggendario', 1, 100, 150, 140, 100, 90, 90),
 (384, 'BASE', 'rayquaza', 'dragon', 'flying', 3, 'undiscovered', NULL, 'leggendario', 1, 105, 150, 90, 150, 90, 95),
+(384, 'MEGA', 'mega-rayquaza', 'dragon', 'flying', 3, 'undiscovered', NULL, 'mega', 1, 105, 180, 100, 180, 100, 115),
 (385, 'BASE', 'jirachi', 'steel', 'psychic', 3, 'undiscovered', NULL, 'mitico', 1, 100, 100, 100, 100, 100, 100),
 (386, 'BASE', 'deoxys', 'psychic', NULL, 3, 'undiscovered', NULL, 'mitico', 1, 50, 150, 50, 150, 50, 150),
 (387, 'BASE', 'turtwig', 'grass', NULL, 4, 'monster', 'grass', 'normale', 1, 55, 68, 64, 45, 55, 31),
@@ -1829,10 +2027,10 @@ INSERT INTO `pokemon` (`cod`, `sec_form`, `nome`, `tipo1`, `tipo2`, `regione`, `
 (489, 'BASE', 'phione', 'water', NULL, 4, 'water1', 'fairy', 'mitico', 1, 80, 80, 80, 80, 80, 80),
 (490, 'BASE', 'manaphy', 'water', NULL, 4, 'water1', 'fairy', 'mitico', 1, 100, 100, 100, 100, 100, 100),
 (491, 'BASE', 'darkrai', 'dark', NULL, 4, 'undiscovered', NULL, 'mitico', 1, 70, 90, 90, 135, 90, 125),
-(492, 'BASE', 'shaymin', 'grass', NULL, 4, 'undiscovered', NULL, 'mitico', 1, 100, 100, 100, 100, 100, 100),
-(493, 'BASE', 'arceus', 'normal', NULL, 4, 'undiscovered', NULL, 'mitico', 1, 120, 120, 120, 120, 120, 120),
-(494, 'BASE', 'victini', 'psychic', 'fire', 5, 'undiscovered', NULL, 'mitico', 1, 100, 100, 100, 100, 100, 100);
+(492, 'BASE', 'shaymin', 'grass', NULL, 4, 'undiscovered', NULL, 'mitico', 1, 100, 100, 100, 100, 100, 100);
 INSERT INTO `pokemon` (`cod`, `sec_form`, `nome`, `tipo1`, `tipo2`, `regione`, `uovo1`, `uovo2`, `grado`, `originale`, `HP`, `ATK`, `DEF`, `SP_ATK`, `SP_DEF`, `SPE`) VALUES
+(493, 'BASE', 'arceus', 'normal', NULL, 4, 'undiscovered', NULL, 'mitico', 1, 120, 120, 120, 120, 120, 120),
+(494, 'BASE', 'victini', 'psychic', 'fire', 5, 'undiscovered', NULL, 'mitico', 1, 100, 100, 100, 100, 100, 100),
 (495, 'BASE', 'snivy', 'grass', NULL, 5, 'field', 'grass', 'normale', 1, 45, 45, 55, 45, 55, 63),
 (496, 'BASE', 'servine', 'grass', NULL, 5, 'field', 'grass', 'normale', 1, 60, 60, 75, 60, 75, 83),
 (497, 'BASE', 'serperior', 'grass', NULL, 5, 'field', 'grass', 'normale', 1, 75, 75, 95, 75, 95, 113),
@@ -2059,7 +2257,10 @@ INSERT INTO `squadra` (`id_squadra`, `codice_utente`) VALUES
 (7, 7),
 (8, 8),
 (9, 9),
-(10, 10);
+(10, 10),
+(11, 11),
+(12, 12),
+(13, 13);
 
 -- --------------------------------------------------------
 
@@ -2086,9 +2287,21 @@ CREATE TABLE `squadra_pokemon` (
 INSERT INTO `squadra_pokemon` (`id_squadra`, `slot`, `cod`, `sec_form`, `mossa1`, `mossa2`, `mossa3`, `mossa4`, `abilita_scelta`) VALUES
 (7, 1, 6, 'BASE', 53, NULL, NULL, NULL, 1),
 (7, 2, 149, 'BASE', 200, NULL, NULL, NULL, 2),
+(8, 1, 6, 'BASE', 53, 337, NULL, NULL, 1),
 (9, 1, 6, 'BASE', 53, 337, NULL, NULL, 1),
 (9, 2, 94, 'BASE', 95, 164, 195, 247, 131),
-(10, 1, 644, 'BASE', 200, 349, 444, 550, 164);
+(10, 1, 260, 'MEGA', 8, 89, 127, 612, 35),
+(10, 2, 612, 'BASE', 200, 242, 349, 416, 105),
+(10, 3, 644, 'BASE', 337, 349, 444, 559, 164),
+(10, 4, 6, 'BASE', 53, 337, NULL, NULL, 1),
+(10, 5, 475, 'BASE', 14, 339, 409, 427, 154),
+(11, 1, 94, 'BASE', 95, 164, 195, 247, 131),
+(12, 1, 442, 'BASE', 94, 247, 318, 399, 48),
+(12, 2, 407, 'BASE', 92, 326, 412, 188, 32),
+(12, 3, 423, 'BASE', 58, 89, 188, 330, 62),
+(12, 4, 448, 'BASE', 396, 406, 439, 245, 81),
+(12, 5, 350, 'BASE', 57, 58, 243, 392, 65),
+(12, 6, 445, 'BASE', 407, 89, 53, 416, 10);
 
 -- --------------------------------------------------------
 
@@ -2146,7 +2359,10 @@ INSERT INTO `utente` (`codice`, `password`, `nome`) VALUES
 (7, '$2y$10$lbUA0PeQGW/4swnZG3rqH.ZR10u08q37sCsOqEHUP8JBxw7MCdbQi', 'prova'),
 (8, '$2y$10$uo7NJWyVI03vX53KrgS1aulXFeHzJrom9FlE5.NBoLBvxOepixzuG', 'madreperla'),
 (9, '$2y$10$9Z5o2B3YjfWbxAxxbcC6OOLt/7SXXKKWpwWe/vElvTN87fTRISYz6', 'xingye'),
-(10, '$2y$10$N2PTD4K1qcsb/fNr3hhzzOvQh3ZkeEStcDB3h3qZyq0pqegxijawi', 'manuz');
+(10, '$2y$10$N2PTD4K1qcsb/fNr3hhzzOvQh3ZkeEStcDB3h3qZyq0pqegxijawi', 'manuz'),
+(11, 'allenatore', 'Ye'),
+(12, 'allenatore', 'Cynthia'),
+(13, 'allenatore', 'Manuel');
 
 --
 -- Indici per le tabelle scaricate
@@ -2174,10 +2390,16 @@ ALTER TABLE `battaglia`
   ADD KEY `id_player2` (`id_player2`);
 
 --
+-- Indici per le tabelle `effetto`
+--
+ALTER TABLE `effetto`
+  ADD PRIMARY KEY (`id_effetto`);
+
+--
 -- Indici per le tabelle `effetto_mossa`
 --
 ALTER TABLE `effetto_mossa`
-  ADD PRIMARY KEY (`id_effetto`),
+  ADD PRIMARY KEY (`id_effetto`,`id_mossa`),
   ADD KEY `id_mossa` (`id_mossa`);
 
 --
@@ -2269,7 +2491,7 @@ ALTER TABLE `abilita`
 -- AUTO_INCREMENT per la tabella `utente`
 --
 ALTER TABLE `utente`
-  MODIFY `codice` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `codice` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- Limiti per le tabelle scaricate
@@ -2293,7 +2515,8 @@ ALTER TABLE `battaglia`
 -- Limiti per la tabella `effetto_mossa`
 --
 ALTER TABLE `effetto_mossa`
-  ADD CONSTRAINT `effetto_mossa_ibfk_1` FOREIGN KEY (`id_mossa`) REFERENCES `mossa` (`id_mossa`);
+  ADD CONSTRAINT `effetto_mossa_ibfk_1` FOREIGN KEY (`id_effetto`) REFERENCES `effetto` (`id_effetto`),
+  ADD CONSTRAINT `effetto_mossa_ibfk_2` FOREIGN KEY (`id_mossa`) REFERENCES `mossa` (`id_mossa`);
 
 --
 -- Limiti per la tabella `mossa`

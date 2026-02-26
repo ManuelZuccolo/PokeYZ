@@ -73,13 +73,81 @@ $result = $conn->query($sql);
     <meta charset="UTF-8">
     <title>Pokédex Project</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Stili per i link di navigazione */
+        .nav-links {
+            display: flex;
+            gap: 15px;
+            margin-left: 30px;
+        }
+        .nav-link {
+            padding: 8px 15px;
+            background-color: #ffde00;
+            border: 2px solid #3b4cca;
+            border-radius: 20px;
+            text-decoration: none;
+            color: black;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .nav-link:hover {
+            background-color: #3b4cca;
+            color: white;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background-color: #ff0000;
+            border-bottom: 6px solid black;
+            flex-wrap: wrap;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        .hero-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 25px;
+        }
+        .hero-btn {
+            padding: 12px 25px;
+            background-color: #ffde00;
+            border: 3px solid #3b4cca;
+            border-radius: 30px;
+            text-decoration: none;
+            color: black;
+            font-weight: bold;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        .hero-btn:hover {
+            background-color: #3b4cca;
+            color: white;
+            transform: scale(1.05);
+        }
+    </style>
 </head>
 <body class="index-page">
 
-<!-- HEADER -->
+<!-- HEADER CON MENU DI NAVIGAZIONE -->
 <header>
-    <div class="logo">
-        <h1>PokéYZ</h1>
+    <div class="header-left">
+        <div class="logo">
+            <h1>PokéYZ</h1>
+        </div>
+
+        <!-- MENU DI NAVIGAZIONE AGGIUNTO -->
+        <div class="nav-links">
+            <a href="index.php" class="nav-link" style="background-color: #3b4cca; color: white;">Pokédex</a>
+            <a href="mosse.php" class="nav-link">Mosse</a>
+            <a href="abilita.php" class="nav-link">Abilità</a>
+        </div>
     </div>
 
     <div class="login-container">
@@ -96,11 +164,16 @@ $result = $conn->query($sql);
 </div>
 </header>
 
-<!-- HERO SECTION -->
+<!-- HERO SECTION CON BOTTONI AGGIUNTI -->
 <section class="hero">
     <h2>Benvenuto Allenatore!</h2>
     <p>Esplora il mondo dei Pokémon e crea la tua squadra perfetta.</p>
     
+    <!-- BOTTONI VELOCI AGGIUNTI -->
+    <div class="hero-buttons">
+        <a href="mosse.php" class="hero-btn">Esplora Mosse</a>
+        <a href="abilita.php" class="hero-btn">Scopri Abilità</a>
+    </div>
 </section>
 
 <!-- POKEDEX TABLE -->
