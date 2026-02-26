@@ -26,7 +26,7 @@ $scegli = isset($_GET['scegli']);
 <div class="auth-wrapper">
 <div class="auth-card">
 
-<h2>Combatti</h2>
+<h2>Combatti</h2><br>
 
 <?php if(!$scegli): ?>
 
@@ -43,13 +43,14 @@ $scegli = isset($_GET['scegli']);
         <button type="submit" class="main-btn">Scegli Allenatore</button>
     </form>
 </div>
+<a href="squadra.php" class="main-btn">← Indietro</a>
 
 <?php else: ?>
 
 <h3>Seleziona un allenatore:</h3>
 
 <?php
-// Prende tutti gli utenti che sono allenatori (tranne quello loggato)
+// Prende tutti gli utenti che sono allenatori
 $query = "SELECT codice, nome
           FROM utente 
           WHERE password = 'allenatore' AND codice != " . $_SESSION['user_id'];

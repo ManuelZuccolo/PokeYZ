@@ -270,9 +270,7 @@ if ($result->num_rows > 0) {
 
         // Nome immagine
         $imgName = strtolower($nome);
-        if($forma != "BASE"){
-            $imgName .= "_" . strtolower($forma);
-        }
+        
 
 
         //spero funzioni
@@ -283,12 +281,8 @@ if ($result->num_rows > 0) {
               </td>";
 
         echo "<td>$cod</td>";
-
-        if($forma != "BASE"){
-            echo "<td>" . ucfirst($nome) . " (" . ucfirst($forma) . ")</td>";
-        } else {
-            echo "<td>" . ucfirst($nome) . "</td>";
-        }
+        echo "<td>" . ucfirst($nome) . "</td>";
+        
 
         echo "<td>";
         if(!empty($row['tipo1'])){

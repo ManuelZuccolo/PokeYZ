@@ -319,3 +319,13 @@ body.index-page {
     min-width: 180px;
     text-align: center;
 }
+.button-row {
+    display: flex;
+    justify-content: center;  /* CENTRA ORIZZONTALMENTE */
+    gap: 40px;
+    margin-bottom: 30px;
+}
+
+.button-row form {
+    margin: 0;
+}

@@ -84,7 +84,7 @@ if($step === 'salva_tutto'){
                     ORDER BY cod ASC";
             $res = $conn->query($sql);
             while($p = $res->fetch_assoc()):
-                $img = strtolower($p['nome']) . ($p['sec_form'] != 'BASE' ? "_".strtolower($p['sec_form']) : "");
+                $img = strtolower($p['nome']);
             ?>
             <tr>
                 <td><?= str_pad($p['cod'],4,"0",STR_PAD_LEFT) ?></td>
@@ -128,30 +128,106 @@ if($step === 'salva_tutto'){
             <?php endwhile; ?>
         </table>
 
-    <?php elseif($step === 'scegli_mosse'): ?>
-        <h3>Scegli le mosse (Max 4):</h3>
-        <form method="POST">
-            <input type="hidden" name="step" value="salva_tutto">
-            <input type="hidden" name="slot" value="<?= $slot_corrente ?>">
-            <input type="hidden" name="pokemon_cod" value="<?= $pokemon_cod ?>">
-            <input type="hidden" name="sec_form" value="<?= $sec_form ?>">
-            <input type="hidden" name="abilita_id" value="<?= $_POST['abilita_id'] ?>">
-            <table class="pokedex-table">
-                <?php
-                $stmt = $conn->prepare("SELECT m.id_Mossa, m.nome FROM Mossa_x_pokemon mp JOIN Mossa m ON mp.id_mossa = m.id_Mossa WHERE mp.cod = ?");
-                $stmt->bind_param("i", $pokemon_cod);
-                $stmt->execute();
-                $res = $stmt->get_result();
-                while($m = $res->fetch_assoc()): ?>
-                <tr>
-                    <td><?= $m['nome'] ?></td>
-                    <td><input type="checkbox" name="mosse[]" value="<?= $m['id_Mossa'] ?>"></td>
-                </tr>
-                <?php endwhile; ?>
-            </table>
-            <button type="submit" class="main-btn" style="margin-top:20px;">Conferma Squadra</button>
-        </form>
-    <?php endif; ?>
+   <?php elseif($step === 'scegli_mosse'): ?>
+    <h3>Scegli le mosse (Max 4):</h3>
+    <form method="POST" id="mosse-form">
+        <input type="hidden" name="step" value="salva_tutto">
+        <input type="hidden" name="slot" value="<?= $slot_corrente ?>">
+        <input type="hidden" name="pokemon_cod" value="<?= $pokemon_cod ?>">
+        <input type="hidden" name="sec_form" value="<?= $sec_form ?>">
+        <input type="hidden" name="abilita_id" value="<?= $_POST['abilita_id'] ?>">
+        
+        <!-- Contatore mosse selezionate -->
+        <div id="counter-mosse" style="margin-bottom: 15px; padding: 10px; background: #f0f0f0; border-radius: 5px;">
+            <strong>Mosse selezionate: <span id="selected-count">0</span>/4</strong>
+        </div>
+        
+        <table class="pokedex-table">
+            <?php
+            $stmt = $conn->prepare("SELECT m.id_Mossa, m.nome FROM Mossa_x_pokemon mp JOIN Mossa m ON mp.id_mossa = m.id_Mossa WHERE mp.cod = ?");
+            $stmt->bind_param("i", $pokemon_cod);
+            $stmt->execute();
+            $res = $stmt->get_result();
+            while($m = $res->fetch_assoc()): ?>
+            <tr>
+                <td><?= $m['nome'] ?></td>
+                <td><input type="checkbox" name="mosse[]" value="<?= $m['id_Mossa'] ?>" class="move-checkbox"></td>
+            </tr>
+            <?php endwhile; ?>
+        </table>
+        
+        <!-- Messaggio di avviso -->
+        <div id="warning-message" style="color: red; margin-top: 10px; display: none;">
+            Hai già selezionato 4 mosse! Deseleziona una mossa per poterne scegliere un'altra.
+        </div>
+        
+        <button type="submit" class="main-btn" style="margin-top:20px;" id="submit-btn">Conferma PoKémon</button>
+    </form>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkboxes = document.querySelectorAll('.move-checkbox');
+        const selectedCountSpan = document.getElementById('selected-count');
+        const warningDiv = document.getElementById('warning-message');
+        const submitBtn = document.getElementById('submit-btn');
+        const maxMoves = 4;
+        
+        function updateCounter() {
+            const checked = document.querySelectorAll('.move-checkbox:checked');
+            const count = checked.length;
+            selectedCountSpan.textContent = count;
+            
+            // Gestione limitazione selezione
+            if (count >= maxMoves) {
+                // Disabilita tutti i checkbox non selezionati
+                checkboxes.forEach(cb => {
+                    if (!cb.checked) {
+                        cb.disabled = true;
+                    }
+                });
+                warningDiv.style.display = 'block';
+            } else {
+                // Abilita tutti i checkbox
+                checkboxes.forEach(cb => {
+                    cb.disabled = false;
+                });
+                warningDiv.style.display = 'none';
+            }
+            
+            // Abilita/disabilita il pulsante di submit in base al numero di mosse
+            if (count === 0) {
+                submitBtn.disabled = true;
+                submitBtn.style.opacity = '0.5';
+                submitBtn.style.cursor = 'not-allowed';
+            } else {
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = '1';
+                submitBtn.style.cursor = 'pointer';
+            }
+        }
+        
+        // Aggiungi evento change a tutti i checkbox
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updateCounter);
+        });
+        
+        // Inizializza il contatore
+        updateCounter();
+        
+        // Validazione aggiuntiva prima del submit
+        document.getElementById('mosse-form').addEventListener('submit', function(e) {
+            const checked = document.querySelectorAll('.move-checkbox:checked');
+            if (checked.length === 0) {
+                e.preventDefault();
+                alert('Devi selezionare almeno una mossa!');
+            } else if (checked.length > maxMoves) {
+                e.preventDefault();
+                alert('Puoi selezionare massimo 4 mosse!');
+            }
+        });
+    });
+    </script>
+<?php endif; ?>
 
 </div>
 </div>
