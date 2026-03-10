@@ -266,7 +266,7 @@ $modalita = isset($_GET['modalita']) ? $_GET['modalita'] : '';
     
     <div class="game-container">
         <div class="battle-screen">
-            <!-- HEADER CON NOMI ALLENATORI -->
+            <!--NOMI ALLENATORI -->
             <div class="battle-header">
                 <div class="trainer-name player-trainer"><?php echo getNomeUtente($conn, $id_giocatore); ?></div>
                 <div class="vs">VS</div>
@@ -275,7 +275,7 @@ $modalita = isset($_GET['modalita']) ? $_GET['modalita'] : '';
             
             <!-- AREA POKEMON IN BATTAGLIA -->
             <div class="pokemon-battle-area">
-                <!-- POKEMON GIOCATORE (attuale) - in basso a sinistra -->
+                <!-- POKEMON GIOCATORE -->
                 <div class="player-pokemon" id="playerPokemonContainer">
                     <div class="sprite-container">
                         <img src="Img/<?php echo strtolower($pokemon_attuale['name']); ?>.png" 
@@ -303,7 +303,6 @@ $modalita = isset($_GET['modalita']) ? $_GET['modalita'] : '';
                     </div>
                 </div>
 
-                <!-- POKEMON NEMICO - in alto a destra -->
                 <div class="enemy-pokemon">
                     <div class="info-frame enemy-frame" id="enemyInfo">
                         <div class="pokemon-name" id="enemyName">

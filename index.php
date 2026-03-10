@@ -168,12 +168,6 @@ $result = $conn->query($sql);
 <section class="hero">
     <h2>Benvenuto Allenatore!</h2>
     <p>Esplora il mondo dei Pokémon e crea la tua squadra perfetta.</p>
-    
-    <!-- BOTTONI VELOCI AGGIUNTI -->
-    <div class="hero-buttons">
-        <a href="mosse.php" class="hero-btn">Esplora Mosse</a>
-        <a href="abilita.php" class="hero-btn">Scopri Abilità</a>
-    </div>
 </section>
 
 <!-- POKEDEX TABLE -->
